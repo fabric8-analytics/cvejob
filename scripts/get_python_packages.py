@@ -13,9 +13,11 @@ def get_package_names():
 
     soup = BeautifulSoup(response.content, 'html.parser')
     for link in soup.find_all('a'):
-        yield link.get('href')
+        path = link.get('href')
+        package = path.split('/')[2]
+        yield package
 
 
 if __name__ == '__main__':
     for package in get_package_names():
-        print('python', package)
+        print('python,' + package)
