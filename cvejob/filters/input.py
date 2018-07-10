@@ -113,7 +113,7 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
             if response.status_code != 200:
                 return False
 
-            top_lang = None
+            top_lang = ''
             top_lang_bytes = 0
             langs = response.json()
             for lang, lang_bytes in langs.items():
