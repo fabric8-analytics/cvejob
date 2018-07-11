@@ -104,6 +104,8 @@ def get_java_versions(package):
             pass
 
     if not ok:
-        logger.error('Unable to obtain a list of versions for {ga}'.format(ga=ga))
+        logger.error(
+            'Unable to obtain a list of versions for {package}'.format(package=package)
+        )
 
     return list(versions)
