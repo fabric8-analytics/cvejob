@@ -1,6 +1,7 @@
 """Test cvejob.filters.input module."""
 
 from cvejob.filters.input import (
+    validate_cve,
     NotOlderThanCheck,
     NotUnsupportedFileExtensionCheck,
     NotUnderAnalysisCheck,
@@ -72,3 +73,45 @@ def test_not_unexpected_site_in_references_check_fail(javascript_cve, mocker):
 
     check = NotUnexpectedSiteInReferences(javascript_cve)
     assert not check.check()
+
+
+def test_cve_id_cve_age(javascript_cve, mocker):
+    def config_get(key):
+        config = {
+            'cve_id': 'CVE-2018-3757',
+            'cve_age': 1  # CVE is older, but the check should be excluded automatically
+        }
+        return config.get(key)
+
+    config_get_mock = mocker.patch('cvejob.filters.input.Config.get')
+    config_get_mock.side_effect = config_get
+
+    assert validate_cve(
+        javascript_cve,
+        exclude_checks=[
+            NotUnsupportedFileExtensionCheck,
+            IsSupportedGitHubLanguageCheck,
+            NotUnexpectedSiteInReferences
+        ]
+    )
+
+
+def test_validate_cve_exclude(javascript_cve, mocker):
+    def config_get(key):
+        config = {
+            'cve_id': 'CVE-2018-nope'  # doesn't exist, but we exclude the check
+        }
+        return config.get(key)
+
+    config_get_mock = mocker.patch('cvejob.filters.input.Config.get')
+    config_get_mock.side_effect = config_get
+
+    assert validate_cve(
+        javascript_cve,
+        exclude_checks=[
+            IsCherryPickedCveCheck,
+            NotUnsupportedFileExtensionCheck,
+            IsSupportedGitHubLanguageCheck,
+            NotUnexpectedSiteInReferences
+        ]
+    )
