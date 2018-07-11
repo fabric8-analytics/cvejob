@@ -21,6 +21,7 @@ def run():
         feed = json.load(f)
         for cve_dict in feed.get('CVE_Items'):
             cve = CVE.from_dict(cve_dict)
+            logger.info('{cve_id} found'.format(cve_id=cve.cve_id))
             if not validate_cve(cve):
                 logger.info('{cve_id} was filtered out by input checks'.format(cve_id=cve.cve_id))
                 continue
