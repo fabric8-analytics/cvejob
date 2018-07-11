@@ -1,5 +1,6 @@
 """This module contains default package name selector."""
 
+import logging
 from cpe import CPE
 
 from cvejob.config import Config
@@ -8,6 +9,9 @@ from cvejob.utils import (
     get_javascript_versions,
     get_python_versions
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class VersionExistsSelector(object):
@@ -53,6 +57,11 @@ class VersionExistsSelector(object):
                                         break
 
                 if hit:
+                    logger.info(
+                        '{cve_id} Hit for package name: {package}'.format(
+                            cve_id=self._cve.cve_id, package=package
+                        )
+                    )
                     return candidate
 
     def _get_upstream_versions(self, package):
