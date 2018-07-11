@@ -56,14 +56,14 @@ class VersionExistsSelector(object):
                     return candidate
 
     def _get_upstream_versions(self, package):
-        if Config.get('ecosystem') == 'java':
+        if Config.ecosystem == 'java':
             return get_java_versions(package)
-        elif Config.get('ecosystem') == 'python':
+        elif Config.ecosystem == 'python':
             return get_python_versions(package)
-        elif Config.get('ecosystem') == 'javascript':
+        elif Config.ecosystem == 'javascript':
             return get_javascript_versions(package)
         else:
-            raise ValueError('Unsupported ecosystem {e}'.format(e=Config.get('ecosystem')))
+            raise ValueError('Unsupported ecosystem {e}'.format(e=Config.ecosystem))
 
     def _get_cpe_dicts(self, nodes):
 

@@ -10,7 +10,7 @@ from cvejob.identifiers.nvdtoolkit import NvdToolkitPackageNameIdentifier
 
 def get_identifier(cve):
     """Get identifier object."""
-    if not Config.get('use_nvdtoolkit'):
+    if not Config.use_nvdtoolkit:
         cls = NaivePackageNameIdentifier
     else:
         cls = NvdToolkitPackageNameIdentifier

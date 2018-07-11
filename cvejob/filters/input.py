@@ -33,9 +33,9 @@ def validate_cve(cve, exclude_checks=None):
     ]
 
     # IsCherryPickedCveCheck takes precedence over NotOlderThanCheck
-    if Config.get('cve_id'):
+    if Config.cve_id:
         checks.insert(0, IsCherryPickedCveCheck)
-    elif Config.get('cve_age') is not None:
+    elif Config.cve_age is not None:
         checks.insert(0, NotOlderThanCheck)
 
     if exclude_checks:
@@ -68,7 +68,7 @@ class NotOlderThanCheck(CveCheck):
 
     def check(self):
         """Perform the check."""
-        config_age = Config.get('cve_age')
+        config_age = Config.cve_age
         if config_age == 0:
             return True
         now = datetime.datetime.now()
@@ -141,7 +141,7 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
                 if lang_bytes > top_lang_bytes:
                     top_lang_bytes = lang_bytes
                     top_lang = lang
-            if top_lang.lower() == Config.get('ecosystem'):
+            if top_lang.lower() == Config.ecosystem:
                 return True
             return False
 
@@ -173,7 +173,7 @@ class IsCherryPickedCveCheck(CveCheck):
 
     def check(self):
         """Perform the check."""
-        cve_id = Config.get('cve_id')
+        cve_id = Config.cve_id
         if cve_id is not None:
             return cve_id == self._cve.cve_id
 
@@ -200,7 +200,7 @@ class NotUnexpectedSiteInReferencesCheck(CveCheck):
 
     def check(self):
         """Perform the check."""
-        current_ecosystem = Config.get('ecosystem')
+        current_ecosystem = Config.ecosystem
 
         for ref in self._cve.references:
 

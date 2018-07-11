@@ -21,8 +21,8 @@ def run_cpe2pkg(vendor, product):
     query = query_template.format(product=p, vendor=v)
 
     pkgfile = '{pkgfile_dir}/{e}-packages'.format(
-        pkgfile_dir=Config.get('pkgfile_dir'),
-        e=Config.get('ecosystem')
+        pkgfile_dir=Config.pkgfile_dir,
+        e=Config.ecosystem
     )
 
     logger.info(query)
@@ -30,7 +30,7 @@ def run_cpe2pkg(vendor, product):
     # run cpe2pkg tool with given query
     cpe2pkg_output = subprocess.check_output(
         'java -jar {cpe2pkg_path} --pkgfile {pkgfile} "{query}"'.format(
-            cpe2pkg_path=Config.get('cpe2pkg_path'),
+            cpe2pkg_path=Config.cpe2pkg_path,
             pkgfile=pkgfile,
             query=query
         ),
@@ -45,7 +45,7 @@ def run_cpe2pkg(vendor, product):
             continue
 
         score, package = line.split()
-        ecosystem = Config.get('ecosystem')
+        ecosystem = Config.ecosystem
         if ecosystem != 'java':
             package = package[len('{e}:'.format(e=ecosystem)):]
         results.append({'package': package, 'score': score})
