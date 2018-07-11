@@ -46,10 +46,9 @@ def run_cpe2pkg(vendor, product):
 
         score, package = line.split()
         ecosystem = Config.get('ecosystem')
-        if ecosystem != 'maven':
+        if ecosystem != 'java':
             package = package[len('{e}:'.format(e=ecosystem)):]
         results.append({'package': package, 'score': score})
-
     return results
 
 
