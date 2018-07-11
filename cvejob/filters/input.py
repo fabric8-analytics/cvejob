@@ -11,22 +11,32 @@ from collections import namedtuple
 from cvejob.config import Config
 
 
-def validate_cve(cve):
+def validate_cve(cve, exclude_checks=None):
     """Validate given CVE against predefined list of checks.
 
     If any of the checks fail, the CVE should not be further processed.
     """
-    checks = (
+    checks = [
         NotUnsupportedFileExtensionCheck,
         NotUnderAnalysisCheck,
         IsSupportedGitHubLanguageCheck,
         AffectsApplicationCheck,
-        IsCherryPickedCveCheck,
         NotUnexpectedSiteInReferences
-    )
+    ]
 
-    if Config.get('cve_age') is not None:
-        checks += (NotOlderThanCheck,)
+    # IsCherryPickedCveCheck takes precedence over NotOlderThanCheck
+    if Config.get('cve_id'):
+        checks.insert(0, IsCherryPickedCveCheck)
+    elif Config.get('cve_age') is not None:
+        checks.insert(0, NotOlderThanCheck)
+
+    if exclude_checks:
+        for check in exclude_checks:
+            try:
+                checks.remove(check)
+            except ValueError:
+                # this is OK, check is not in the list
+                pass
 
     print([x(cve).check() for x in checks])
     return all(x(cve).check() for x in checks)
