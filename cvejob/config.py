@@ -36,6 +36,7 @@ class RuntimeConfig(object):
     """Runtime configuration holder."""
 
     def __init__(self):
+        """Constructor."""
         self._config = DefaultConfig()
 
         ecosystem = os.environ.get('CVEJOB_ECOSYSTEM')
@@ -71,6 +72,7 @@ class RuntimeConfig(object):
             self._config.nvdtoolkit_export_dir = nvdtoolkit_export_dir
 
     def __getattr__(self, item):
+        """Get attribute."""
         return getattr(self._config, item)
 
 
