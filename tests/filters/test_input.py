@@ -8,7 +8,7 @@ from cvejob.filters.input import (
     IsSupportedGitHubLanguageCheck,
     AffectsApplicationCheck,
     IsCherryPickedCveCheck,
-    NotUnexpectedSiteInReferences
+    NotUnexpectedSiteInReferencesCheck
 )
 
 
@@ -62,7 +62,7 @@ def test_not_unexpected_site_in_references_check(javascript_cve, mocker):
     config_get = mocker.patch('cvejob.filters.input.Config.get')
     config_get.return_value = 'javascript'
 
-    check = NotUnexpectedSiteInReferences(javascript_cve)
+    check = NotUnexpectedSiteInReferencesCheck(javascript_cve)
     assert check.check()
 
 
@@ -71,7 +71,7 @@ def test_not_unexpected_site_in_references_check_fail(javascript_cve, mocker):
     config_get = mocker.patch('cvejob.filters.input.Config.get')
     config_get.return_value = 'python'
 
-    check = NotUnexpectedSiteInReferences(javascript_cve)
+    check = NotUnexpectedSiteInReferencesCheck(javascript_cve)
     assert not check.check()
 
 
@@ -91,7 +91,7 @@ def test_cve_id_cve_age(javascript_cve, mocker):
         exclude_checks=[
             NotUnsupportedFileExtensionCheck,
             IsSupportedGitHubLanguageCheck,
-            NotUnexpectedSiteInReferences
+            NotUnexpectedSiteInReferencesCheck
         ]
     )
 
@@ -112,6 +112,6 @@ def test_validate_cve_exclude(javascript_cve, mocker):
             IsCherryPickedCveCheck,
             NotUnsupportedFileExtensionCheck,
             IsSupportedGitHubLanguageCheck,
-            NotUnexpectedSiteInReferences
+            NotUnexpectedSiteInReferencesCheck
         ]
     )

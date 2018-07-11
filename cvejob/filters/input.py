@@ -21,7 +21,7 @@ def validate_cve(cve, exclude_checks=None):
         NotUnderAnalysisCheck,
         IsSupportedGitHubLanguageCheck,
         AffectsApplicationCheck,
-        NotUnexpectedSiteInReferences
+        NotUnexpectedSiteInReferencesCheck
     ]
 
     # IsCherryPickedCveCheck takes precedence over NotOlderThanCheck
@@ -171,7 +171,7 @@ class IsCherryPickedCveCheck(CveCheck):
         return True
 
 
-class NotUnexpectedSiteInReferences(CveCheck):
+class NotUnexpectedSiteInReferencesCheck(CveCheck):
     """Check whether given CVE doesn't reference websites which cover other ecosystems."""
 
     SiteDefinition = namedtuple('SiteDefinition', ['hostname', 'path'])
