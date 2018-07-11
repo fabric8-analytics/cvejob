@@ -31,7 +31,7 @@ affected:
 
         _, year, cid = self._cve.cve_id.split('-')
         self._year_dir = 'database/{e}/{y}/'.format(
-            e=Config.get('ecosystem'),
+            e=Config.ecosystem,
             y=year
         )
         self._cve_no = cid
@@ -72,7 +72,7 @@ affected:
             f.write(data)
 
     def _get_affected_section(self):
-        if Config.get('ecosystem') == 'java':
+        if Config.ecosystem == 'java':
             gid, aid = self._winner['package'].split(':')
 
             affected = """    - groupId: {gid}

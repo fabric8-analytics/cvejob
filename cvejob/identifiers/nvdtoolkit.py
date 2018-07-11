@@ -15,7 +15,7 @@ class NvdToolkitPackageNameIdentifier(NaivePackageNameIdentifier):
     def identify(self):
         """Identify possible package name candidates."""
         # restored pretrained classifier from the checkpoint
-        clf = NBClassifier.restore(checkpoint=Config.get('nvdtoolkit_export_dir'))
+        clf = NBClassifier.restore(checkpoint=Config.nvdtoolkit_export_dir)
 
         hooks = [
             feature_hooks.has_uppercase_hook,
@@ -35,7 +35,7 @@ class NvdToolkitPackageNameIdentifier(NaivePackageNameIdentifier):
 
         candidates = [x[0][0] for x in results]
 
-        ecosystem = Config.get('ecosystem')
+        ecosystem = Config.ecosystem
         if ecosystem == 'java':
             vendor = candidates
         else:

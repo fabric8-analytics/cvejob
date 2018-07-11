@@ -69,7 +69,7 @@ class NaivePackageNameIdentifier(object):
         vp_pairs = self._get_vendor_product_pairs()
         desc_candidates = self._get_candidates_from_description()
 
-        ecosystem = Config.get('ecosystem')
+        ecosystem = Config.ecosystem
         if ecosystem == 'java':
             vendor = [x[0] for x in vp_pairs] + list(desc_candidates)
         else:

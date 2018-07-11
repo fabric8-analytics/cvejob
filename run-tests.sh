@@ -1,1 +1,1 @@
-pytest -v tests/
+pytest -v tests/ $@
