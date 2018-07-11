@@ -76,6 +76,7 @@ def test_not_unexpected_site_in_references_check_fail(javascript_cve, mocker):
 
 
 def test_cve_id_cve_age(javascript_cve, mocker):
+    """Test scenario when both `cve_id` and `cve_age` options are set."""
     def config_get(key):
         config = {
             'cve_id': 'CVE-2018-3757',
@@ -97,6 +98,7 @@ def test_cve_id_cve_age(javascript_cve, mocker):
 
 
 def test_validate_cve_exclude(javascript_cve, mocker):
+    """Test excluding some checks."""
     def config_get(key):
         config = {
             'cve_id': 'CVE-2018-nope'  # doesn't exist, but we exclude the check
