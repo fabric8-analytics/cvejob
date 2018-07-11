@@ -15,13 +15,16 @@ def validate_cve(cve, exclude_checks=None):
     """Validate given CVE against predefined list of checks.
 
     If any of the checks fail, the CVE should not be further processed.
+
+    :param exclude_checks: iterable, list of check classes to exclude
+    :return: True if all checks passed, False otherwise.
     """
     checks = [
         NotUnsupportedFileExtensionCheck,
         NotUnderAnalysisCheck,
         IsSupportedGitHubLanguageCheck,
         AffectsApplicationCheck,
-        NotUnexpectedSiteInReferences
+        NotUnexpectedSiteInReferencesCheck
     ]
 
     # IsCherryPickedCveCheck takes precedence over NotOlderThanCheck
@@ -171,7 +174,7 @@ class IsCherryPickedCveCheck(CveCheck):
         return True
 
 
-class NotUnexpectedSiteInReferences(CveCheck):
+class NotUnexpectedSiteInReferencesCheck(CveCheck):
     """Check whether given CVE doesn't reference websites which cover other ecosystems."""
 
     SiteDefinition = namedtuple('SiteDefinition', ['hostname', 'path'])
