@@ -6,6 +6,7 @@ import datetime
 import nltk
 import requests
 from urllib.parse import urlparse
+from collections import namedtuple
 
 from cvejob.config import Config
 
@@ -20,7 +21,8 @@ def validate_cve(cve):
         NotUnderAnalysisCheck,
         IsSupportedGitHubLanguageCheck,
         AffectsApplicationCheck,
-        IsCherryPickedCveCheck
+        IsCherryPickedCveCheck,
+        NotUnexpectedSiteInReferences
     )
 
     if Config.get('cve_age') is not None:
@@ -155,5 +157,48 @@ class IsCherryPickedCveCheck(CveCheck):
         cve_id = Config.get('cve_id')
         if cve_id is not None:
             return cve_id == self._cve.cve_id
+
+        return True
+
+
+class NotUnexpectedSiteInReferences(CveCheck):
+    """Check whether given CVE doesn't reference websites which cover other ecosystems."""
+
+    SiteDefinition = namedtuple('SiteDefinition', ['hostname', 'path'])
+
+    known_sites = {
+        'javascript': [
+            SiteDefinition(hostname='nodesecurity.io', path=None),
+            SiteDefinition(hostname='snyk.io', path='/vuln/npm:'),
+        ],
+        'python': [
+            SiteDefinition(hostname='snyk.io', path='/vuln/pip:')
+        ]
+    }
+
+    def check(self):
+        """Perform the check."""
+        current_ecosystem = Config.get('ecosystem')
+
+        for ref in self._cve.references:
+
+            ref_parsed = urlparse(ref)
+            for ecosystem in self.known_sites:
+
+                if current_ecosystem == ecosystem:
+                    # all references to sites which cover currently selected
+                    # ecosystem are good
+                    continue
+
+                for site in self.known_sites[ecosystem]:
+                    if ref_parsed.hostname == site.hostname:
+                        if site.path and not ref_parsed.path.startswith(site.path):
+                            # site matches the references, but path is different,
+                            # so this is not a problem
+                            continue
+
+                        # reference points to a site which covers some other ecosystem,
+                        # so no reason to continue processing this CVE
+                        return False
 
         return True
