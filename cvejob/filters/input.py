@@ -5,10 +5,14 @@ import abc
 import datetime
 import nltk
 import requests
+import logging
 from urllib.parse import urlparse
 from collections import namedtuple
 
 from cvejob.config import Config
+
+
+logger = logging.getLogger(__name__)
 
 
 def validate_cve(cve, exclude_checks=None):
@@ -16,6 +20,7 @@ def validate_cve(cve, exclude_checks=None):
 
     If any of the checks fail, the CVE should not be further processed.
 
+    :param cve: CVE object
     :param exclude_checks: iterable, list of check classes to exclude
     :return: True if all checks passed, False otherwise.
     """
@@ -41,8 +46,9 @@ def validate_cve(cve, exclude_checks=None):
                 # this is OK, check is not in the list
                 pass
 
-    print([x(cve).check() for x in checks])
-    return all(x(cve).check() for x in checks)
+    results = [(x.__name__, x(cve).check()) for x in checks]
+    logger.info(results)
+    return all(x[1] for x in results)
 
 
 class CveCheck(object, metaclass=abc.ABCMeta):
