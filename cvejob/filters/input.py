@@ -173,6 +173,9 @@ class NotUnexpectedSiteInReferences(CveCheck):
         ],
         'python': [
             SiteDefinition(hostname='snyk.io', path='/vuln/pip:')
+        ],
+        'java': [
+            SiteDefinition(hostname='snyk.io', path='/vuln/maven:')
         ]
     }
 
