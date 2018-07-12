@@ -82,7 +82,7 @@ class NotUnsupportedFileExtensionCheck(CveCheck):
     def check(self):
         """Perform the check."""
         tokens = nltk.word_tokenize(self._cve.description)
-        extensions = ('.php', '.c', '.cpp', '.h')
+        extensions = ('.php', '.c', '.cpp', '.h', '.go')
         return not any(x for x in tokens if any(
             y for y in extensions if x.lower().endswith(y)
         ))
