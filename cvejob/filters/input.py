@@ -146,7 +146,7 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
                     top_lang_bytes = lang_bytes
                     top_lang = lang
 
-            lang_group = (Config.ecosystem, *self.lang_groups.get(Config.ecosystem))
+            lang_group = (Config.ecosystem, *self.lang_groups.get(Config.ecosystem, []))
 
             if top_lang and top_lang.lower() in lang_group:
                 return True
