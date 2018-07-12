@@ -195,6 +195,9 @@ class NotUnexpectedSiteInReferencesCheck(CveCheck):
         ],
         'java': [
             SiteDefinition(hostname='snyk.io', path='/vuln/maven:')
+        ],
+        'php': [
+            SiteDefinition(hostname='wpvulndb.com', path=None)
         ]
     }
 
