@@ -6,8 +6,12 @@ import datetime
 import nltk
 import requests
 import logging
+import re
 from urllib.parse import urlparse
 from collections import namedtuple
+from string import punctuation
+
+from nltk.stem import PorterStemmer
 
 from cvejob.config import Config
 
@@ -103,6 +107,36 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
         'javascript': ['typescript']
     }
 
+    _name_whitelist_raw = ('vuln', 'vulnerability', 'poc', 'advisory', 'security', 'cve')
+
+    def __init__(self, cve):
+        """Constructor."""
+        super().__init__(cve)
+
+        self._stemmer = PorterStemmer()
+        # regexp to split strings on punctuation
+        self._punc_re = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
+        self._name_whitelist = {self._stemmer.stem(x) for x in self._name_whitelist_raw}
+
+    def is_security_project(self, owner, repo):
+        """Check whether this GitHub project is likely a security project."""
+
+        regexp = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
+
+        # split on punctuation
+        words = regexp.split(owner)
+        words.extend(regexp.split(repo))
+
+        # further split on CamelCase
+        words = [
+            x for y in [re.sub('([a-z])([A-Z])', r'\1 \2', w).split() for w in words] for x in y
+        ]
+
+        for word in words:
+            if self._stemmer.stem(word) in self._name_whitelist:
+                return True
+        return False
+
     def check(self):
         """Perform the check."""
         refs = self._cve.references
@@ -154,6 +188,10 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
 
         for ref in refs:
             result = is_github_ref(ref)
+
+            # ignore this reference if it is a security project
+            if result and self.is_security_project(result[0], result[1]):
+                continue
 
             # fail here if this is a GitHub reference, but the language is not supported
             if result and not is_supported_gh_language(result[0], result[1]):
