@@ -1,5 +1,8 @@
 """Test cvejob.filters.input module."""
 
+import pytest
+
+
 from cvejob.filters.input import (
     validate_cve,
     NotOlderThanCheck,
@@ -38,6 +41,19 @@ def test_is_supported_github_language_check(config, javascript_cve, mocker):
 
     check = IsSupportedGitHubLanguageCheck(javascript_cve)
     assert check.check()
+
+
+@pytest.mark.parametrize('owner,repo,expected', [
+    ('owner', 'NPM-Vuln-PoC', True),
+    ('NPM-Vuln-PoC', 'repo', True),
+    ('BlockChainsSecurity', 'Reports', True),
+    ('owner', 'VulnerabilitiesReport', True),
+    ('fabric8-analytics', 'CveDB', True),
+    ('fabric8-analytics', 'fabric8-analytics-worker', False)
+])
+def test_is_security_project(javascript_cve, owner, repo, expected):
+    check = IsSupportedGitHubLanguageCheck(javascript_cve)
+    assert check.is_security_project(owner, repo) == expected
 
 
 def test_affects_application_check(javascript_cve):
