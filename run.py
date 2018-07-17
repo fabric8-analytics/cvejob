@@ -22,25 +22,31 @@ def run():
         for cve_dict in feed.get('CVE_Items'):
             cve = CVE.from_dict(cve_dict)
             logger.info('{cve_id} found'.format(cve_id=cve.cve_id))
-            if not validate_cve(cve):
-                logger.info('{cve_id} was filtered out by input checks'.format(cve_id=cve.cve_id))
-                continue
 
-            identifier = get_identifier(cve)
-            candidates = identifier.identify()
+            try:
+                if not validate_cve(cve):
+                    logger.info('{cve_id} was filtered out by input checks'.format(cve_id=cve.cve_id))
+                    continue
 
-            if not candidates:
-                logger.info('{cve_id} no package name candidates found'.format(cve_id=cve.cve_id))
-                continue
+                identifier = get_identifier(cve)
+                candidates = identifier.identify()
 
-            selector = VersionExistsSelector(cve, candidates)
-            winner = selector.pick_winner()
+                if not candidates:
+                    logger.info('{cve_id} no package name candidates found'.format(cve_id=cve.cve_id))
+                    continue
 
-            if not winner:
-                logger.info('{cve_id} no package name found'.format(cve_id=cve.cve_id))
-                continue
+                selector = VersionExistsSelector(cve, candidates)
+                winner = selector.pick_winner()
 
-            VictimsYamlOutput(cve, winner, candidates).write()
+                if not winner:
+                    logger.info('{cve_id} no package name found'.format(cve_id=cve.cve_id))
+                    continue
+
+                VictimsYamlOutput(cve, winner, candidates).write()
+            finally:
+                if Config.cve_id and Config.cve_id == cve.cve_id:
+                    # we found what we were looking for, skip the rest
+                    break
 
 
 if __name__ == '__main__':
