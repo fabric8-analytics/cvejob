@@ -50,9 +50,15 @@ def validate_cve(cve, exclude_checks=None):
                 # this is OK, check is not in the list
                 pass
 
-    results = [(x.__name__, x(cve).check()) for x in checks]
+    results = []
+    for check in checks:
+        results.append((check.__name__, check(cve).check()))
+        if not results[-1][1]:
+            # one check failed, no need to continue checking
+            break
+
     logger.info(results)
-    return all(x[1] for x in results)
+    return results[-1][1] if results else True
 
 
 class CveCheck(object, metaclass=abc.ABCMeta):
