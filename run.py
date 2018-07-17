@@ -25,14 +25,18 @@ def run():
 
             try:
                 if not validate_cve(cve):
-                    logger.info('{cve_id} was filtered out by input checks'.format(cve_id=cve.cve_id))
+                    logger.info(
+                        '{cve_id} was filtered out by input checks'.format(cve_id=cve.cve_id)
+                    )
                     continue
 
                 identifier = get_identifier(cve)
                 candidates = identifier.identify()
 
                 if not candidates:
-                    logger.info('{cve_id} no package name candidates found'.format(cve_id=cve.cve_id))
+                    logger.info(
+                        '{cve_id} no package name candidates found'.format(cve_id=cve.cve_id)
+                    )
                     continue
 
                 selector = VersionExistsSelector(cve, candidates)
