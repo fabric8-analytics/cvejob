@@ -126,7 +126,6 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
 
     def is_security_project(self, owner, repo):
         """Check whether this GitHub project is likely a security project."""
-
         regexp = re.compile(r'[\s{}]+'.format(re.escape(punctuation)))
 
         # split on punctuation
