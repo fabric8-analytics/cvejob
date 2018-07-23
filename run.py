@@ -17,7 +17,7 @@ logger = logging.getLogger('cvejob')
 
 def run():
     """Run CVEjob."""
-    with open(Config.feed_path) as f:
+    with open(Config.feed_path, encoding='utf-8') as f:
         feed = json.load(f)
         for cve_dict in feed.get('CVE_Items'):
             cve = CVE.from_dict(cve_dict)
