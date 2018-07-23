@@ -27,7 +27,7 @@ class VersionExistsSelector(object):
 
         Or no winner, if all candidates fail the version check.
         """
-        cpe_dicts = self._get_cpe_dicts(self._cve.configurations)
+        cpe_dicts = self._cve.get_cpe(cpe_type='a', nodes=self._cve.configurations)
         cpe_versions = self._get_cpe_versions(cpe_dicts)
 
         if cpe_versions:
@@ -73,20 +73,6 @@ class VersionExistsSelector(object):
             return get_javascript_versions(package)
         else:
             raise ValueError('Unsupported ecosystem {e}'.format(e=Config.ecosystem))
-
-    def _get_cpe_dicts(self, nodes):
-
-        cpe_dicts = []
-
-        for node in nodes:
-            if node.children:
-                cpe_dicts.append(self._get_cpe_dicts(node.children))
-
-            for cpe in node.cpe:
-                if cpe.is_application():
-                    cpe_dicts.append(cpe)
-
-        return cpe_dicts
 
     def _get_cpe_versions(self, cpe_dicts):
         cpe_versions = set()
