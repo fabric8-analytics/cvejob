@@ -63,7 +63,16 @@ def get_javascript_versions(package):
         logger.error('Unable to fetch versions for package {pkg_name}'.format(pkg_name=package))
         return []
 
-    versions = {x for x in response.json().get('versions')}
+    response_json = {}
+    try:
+        response_json = response.json()
+    except ValueError:
+        pass
+    finally:
+        if not response_json:
+            return []
+
+    versions = {x for x in response_json.get('versions', {})}
 
     return list(versions)
 
