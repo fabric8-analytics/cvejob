@@ -10,7 +10,6 @@ from cvejob.filters.input import (
     NotUnderAnalysisCheck,
     IsSupportedGitHubLanguageCheck,
     AffectsApplicationCheck,
-    IsCherryPickedCveCheck,
     NotUnexpectedSiteInReferencesCheck
 )
 
@@ -63,14 +62,6 @@ def test_affects_application_check(javascript_cve):
     assert check.check()
 
 
-def test_is_cherrypicked_cve_check(config, javascript_cve, mocker):
-    """Test IsCherryPickedCveCheck()."""
-    mocker.patch('cvejob.filters.input.Config', config(cve_id='CVE-2018-3757'))
-
-    check = IsCherryPickedCveCheck(javascript_cve)
-    assert check.check()
-
-
 def test_not_unexpected_site_in_references_check(config, javascript_cve, mocker):
     """Test NotUnexpectedSiteInReferences()."""
     mocker.patch('cvejob.filters.input.Config', config(ecosystem='javascript'))
@@ -110,7 +101,6 @@ def test_validate_cve_exclude(config, javascript_cve, mocker):
     assert validate_cve(
         javascript_cve,
         exclude_checks=[
-            IsCherryPickedCveCheck,
             NotUnsupportedFileExtensionCheck,
             IsSupportedGitHubLanguageCheck,
             NotUnexpectedSiteInReferencesCheck
