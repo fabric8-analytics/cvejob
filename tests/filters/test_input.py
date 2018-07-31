@@ -52,6 +52,7 @@ def test_is_supported_github_language_check(config, javascript_cve, mocker):
     ('fabric8-analytics', 'fabric8-analytics-worker', False)
 ])
 def test_is_security_project(javascript_cve, owner, repo, expected):
+    """Test IsSupportedGitHubLanguageCheck().is_security_project()."""
     check = IsSupportedGitHubLanguageCheck(javascript_cve)
     assert check.is_security_project(owner, repo) == expected
 
