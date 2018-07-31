@@ -36,10 +36,8 @@ def validate_cve(cve, exclude_checks=None):
         NotUnexpectedSiteInReferencesCheck
     ]
 
-    # IsCherryPickedCveCheck takes precedence over NotOlderThanCheck
-    if Config.cve_id:
-        checks.insert(0, IsCherryPickedCveCheck)
-    elif Config.cve_age is not None:
+    # ignore NotOlderThanCheck if we have cherry-picked CVE
+    if not Config.cve_id and Config.cve_age is not None:
         checks.insert(0, NotOlderThanCheck)
 
     if exclude_checks:
@@ -216,18 +214,6 @@ class AffectsApplicationCheck(CveCheck):
         if self._cve.get_cpe(cpe_type='a'):
             return True
         return False
-
-
-class IsCherryPickedCveCheck(CveCheck):
-    """Check whether given CVE was cherry-picked by user."""
-
-    def check(self):
-        """Perform the check."""
-        cve_id = Config.cve_id
-        if cve_id is not None:
-            return cve_id == self._cve.cve_id
-
-        return True
 
 
 class NotUnexpectedSiteInReferencesCheck(CveCheck):

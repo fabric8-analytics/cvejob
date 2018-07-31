@@ -18,12 +18,20 @@ logger = logging.getLogger('cvejob')
 def run():
     """Run CVEjob."""
     with open(Config.feed_path, encoding='utf-8') as f:
+        cherrypicked_cve_id = Config.cve_id
+
         feed = json.load(f)
+
         for cve_dict in feed.get('CVE_Items'):
             cve = CVE.from_dict(cve_dict)
             logger.info('{cve_id} found'.format(cve_id=cve.cve_id))
 
             try:
+                if cherrypicked_cve_id and cve.cve_id != cherrypicked_cve_id:
+                    # we are only interested in the cherry-picked CVE ID
+                    logger.info('{cve_id} not cherry-picked, skipping')
+                    continue
+
                 if not validate_cve(cve):
                     logger.info(
                         '{cve_id} was filtered out by input checks'.format(cve_id=cve.cve_id)
@@ -48,7 +56,7 @@ def run():
 
                 VictimsYamlOutput(cve, winner, candidates).write()
             finally:
-                if Config.cve_id and Config.cve_id == cve.cve_id:
+                if cherrypicked_cve_id and cve.cve_id == cherrypicked_cve_id:
                     # we found what we were looking for, skip the rest
                     break
 
