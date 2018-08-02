@@ -3,7 +3,7 @@ database/
 __pycache__
 nvdcve.json
 .idea/
-/data
 .pytest_cache/
 venv/
 *.jar
+/data/*-packages
