@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """This script prints names of all packages in PyPI to stdout."""
 
 from bs4 import BeautifulSoup
@@ -19,5 +20,5 @@ def get_package_names():
 
 
 if __name__ == '__main__':
-    for package in get_package_names():
-        print('python,' + package)
+    for pkg in get_package_names():
+        print('python,' + pkg)
