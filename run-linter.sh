@@ -1,19 +1,45 @@
 #!/bin/bash
 
-directories="cvejob"
+directories="cvejob tests"
 separate_files="run.py"
 
 pass=0
 fail=0
 
-function prepare_venv() {
-    VIRTUALENV=$(which virtualenv)
-    if [ $? -eq 1 ]; then
-        # python34 which is in CentOS does not have virtualenv binary
-        VIRTUALENV=$(which virtualenv-3)
-    fi
+TERM=${TERM:-xterm}
 
-    ${VIRTUALENV} -p python3 venv && source venv/bin/activate && python3 "$(which pip3)" install pycodestyle
+# set up terminal colors
+NORMAL=$(tput sgr0)
+RED=$(tput bold && tput setaf 1)
+GREEN=$(tput bold && tput setaf 2)
+YELLOW=$(tput bold && tput setaf 3)
+
+
+TERM=${TERM:-xterm}
+
+# set up terminal colors
+NORMAL=$(tput sgr0)
+RED=$(tput bold && tput setaf 1)
+GREEN=$(tput bold && tput setaf 2)
+YELLOW=$(tput bold && tput setaf 3)
+
+function prepare_venv() {
+	# we want tests to run on python3.6
+	printf 'checking alias `python3.6` ... ' >&2
+	PYTHON=$(which python3.6 2> /dev/null)
+	if [ "$?" -ne "0" ]; then
+		printf "%sNOT FOUND%s\n" "${YELLOW}" "${NORMAL}" >&2
+
+		printf 'checking alias `python3` ... ' >&2
+		PYTHON=$(which python3 2> /dev/null)
+
+		let ec=$?
+		[ "$ec" -ne "0" ] && printf "${RED} NOT FOUND ${NORMAL}\n" && return $ec
+	fi
+
+	printf "%sOK%s\n" "${GREEN}" "${NORMAL}" >&2
+
+	${PYTHON} -m venv "venv" && source venv/bin/activate && pip install pycodestyle >&2
 }
 
 echo "----------------------------------------------------"

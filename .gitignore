@@ -7,3 +7,4 @@ nvdcve.json
 venv/
 *.jar
 /data/*-packages
+.coverage
