@@ -7,7 +7,7 @@
 set -e
 set -x
 
-feed='recent'
+feed='modified'
 [ -n "$1" ] && feed=$1
 
 url="https://static.nvd.nist.gov/feeds/json/cve/1.0/nvdcve-1.0-$feed.json.gz"
