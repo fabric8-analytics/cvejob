@@ -1,0 +1,12 @@
+<FindBugsFilter>
+  <Match>
+    <Class name="com.redhat.fabric8.analytics.cpe2pkg.Main" />
+    <Method name="configureAndRun" />
+    <Bug pattern="DM_EXIT" />
+  </Match>
+  <Match>
+    <Class name="com.redhat.fabric8.analytics.cpe2pkg.Main" />
+    <Method name="run" />
+    <Bug pattern="DM_EXIT" />
+  </Match>
+</FindBugsFilter>

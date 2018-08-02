@@ -4,6 +4,6 @@ __pycache__
 nvdcve.json
 .idea/
 /data
-cpe2pkg.jar
 .pytest_cache/
 venv/
+*.jar
