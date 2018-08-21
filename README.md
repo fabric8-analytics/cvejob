@@ -2,6 +2,14 @@
 
 CI job which tries to identify CVEs in supported ecosystems (Maven, NPM, PyPI).
 
+Links:
+
+* [overview](docs/overview.md)
+
+* [how it works](docs/how_it_works.md)
+
+* [roadmap](docs/roadmap.md)
+
 
 # Running locally
 
