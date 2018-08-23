@@ -1,6 +1,6 @@
 #!/bin/bash
 
-directories="cvejob tests"
+directories="cvejob tests scripts"
 separate_files="run.py"
 
 pass=0
