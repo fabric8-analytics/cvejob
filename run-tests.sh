@@ -47,5 +47,5 @@ python -c "import nltk; nltk.download('stopwords')"
 pip install pytest pytest-cov
 
 # run tests
-PYTHONPATH=src/ pytest --cov="cvejob/" --cov-report term-missing --cov-fail-under=$COVERAGE_THRESHOLD -vv tests/ $@
+pytest --cov="cvejob/" --cov-report term-missing --cov-fail-under=$COVERAGE_THRESHOLD -vv tests/ $@
 
