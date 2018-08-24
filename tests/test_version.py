@@ -16,6 +16,7 @@ def test_version_basic():
     assert BenevolentVersion('0') != BenevolentVersion('')
     assert BenevolentVersion('') == BenevolentVersion('')
     assert BenevolentVersion(1) == BenevolentVersion(1)
+    assert BenevolentVersion('Final.RELEASE') == BenevolentVersion('Final.RELEASE')
 
 
 def test_version_trailing_zeros():
@@ -34,6 +35,7 @@ def test_version_complex():
     assert BenevolentVersion('0.3m1') == BenevolentVersion('0.3')
     assert BenevolentVersion('0.3-SNAPSHOT-1') == BenevolentVersion('0.3')
     assert BenevolentVersion('1.2.Final') == BenevolentVersion('1.2.0')
+    assert BenevolentVersion('1.2.Final.RELEASE') == BenevolentVersion('1.2.0')
 
 
 def test_version_exact():
@@ -54,3 +56,12 @@ def test_hash():
         BenevolentVersion(None)
     }
     assert len(s) == 2
+
+
+def test_repr():
+    """Basic test for the __repr__ method."""
+    v = BenevolentVersion('1.0')
+    assert v.__repr__() == "BenevolentVersion('1.0')"
+
+    v = BenevolentVersion('1.2.3')
+    assert v.__repr__() == "BenevolentVersion('1.2.3')"
