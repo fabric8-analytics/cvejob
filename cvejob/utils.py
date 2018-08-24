@@ -91,29 +91,33 @@ def get_python_versions(package):
 
 def get_java_versions(package):
     """Get all versions for given groupId:artifactId."""
-    g, a = package.split(':')
-    g = g.replace('.', '/')
+    try:
+        g, a = package.split(':')
+        g = g.replace('.', '/')
 
-    filenames = {'maven-metadata.xml', 'maven-metadata-local.xml'}
+        filenames = {'maven-metadata.xml', 'maven-metadata-local.xml'}
 
-    versions = set()
-    ok = False
-    for filename in filenames:
+        versions = set()
+        ok = False
+        for filename in filenames:
 
-        url = 'http://repo1.maven.org/maven2/{g}/{a}/{f}'.format(g=g, a=a, f=filename)
+            url = 'http://repo1.maven.org/maven2/{g}/{a}/{f}'.format(g=g, a=a, f=filename)
 
-        try:
-            metadata_xml = etree.parse(url)
-            ok = True  # We successfully downloaded the file
-            version_elements = metadata_xml.findall('.//version')
-            versions = versions.union({x.text for x in version_elements})
-        except OSError:
-            # Not both XML files have to exist, so don't freak out yet
-            pass
+            try:
+                metadata_xml = etree.parse(url)
+                ok = True  # We successfully downloaded the file
+                version_elements = metadata_xml.findall('.//version')
+                versions = versions.union({x.text for x in version_elements})
+            except OSError:
+                # Not both XML files have to exist, so don't freak out yet
+                pass
 
-    if not ok:
-        logger.error(
-            'Unable to obtain a list of versions for {package}'.format(package=package)
-        )
+        if not ok:
+            logger.error(
+                'Unable to obtain a list of versions for {package}'.format(package=package)
+            )
 
-    return list(versions)
+        return list(versions)
+    except ValueError:
+        # wrong package specification etc.
+        return []
