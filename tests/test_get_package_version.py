@@ -1,9 +1,8 @@
 """Test the code to retrieve package version from online sources."""
 
-from unittest.mock import *
-import requests
+from unittest.mock import patch
 
-from cvejob.utils import *
+from cvejob.utils import get_java_versions, get_python_versions, get_javascript_versions
 
 
 def test_get_javascript_versions():
@@ -54,7 +53,7 @@ def mocked_requests_get_value_error(url):
 
 
 @patch("requests.get", side_effect=mocked_requests_get_no_json)
-def test_get_javascript_versions_empty_server_response(mocked_get):
+def test_get_javascript_versions_empty_server_response(_mocked_get):
     """Test the behavior of function get_javascript_versions for empty server response."""
     package_versions = get_javascript_versions("array")
     # empty list is expected
@@ -63,7 +62,7 @@ def test_get_javascript_versions_empty_server_response(mocked_get):
 
 
 @patch("requests.get", side_effect=mocked_requests_get_value_error)
-def test_get_javascript_versions_empty_server_response(mocked_get):
+def test_get_javascript_versions_empty_server_response(_mocked_get):
     """Test the behavior of function get_javascript_versions for server response w/o proper JSON."""
     package_versions = get_javascript_versions("array")
     # empty list is expected
