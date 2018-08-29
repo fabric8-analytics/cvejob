@@ -20,6 +20,12 @@ def test_get_javascript_versions():
     assert not package_versions
 
 
+def test_get_javascript_versions_deprecated_package():
+    """Test basic behavior of the function get_javascript_versions."""
+    package_versions = get_javascript_versions("nsp")
+    assert package_versions is not None
+
+
 class _response_no_json:
 
     def __init__(self, status_code, text):
@@ -62,7 +68,7 @@ def test_get_javascript_versions_empty_server_response(_mocked_get):
 
 
 @patch("requests.get", side_effect=mocked_requests_get_value_error)
-def test_get_javascript_versions_empty_server_response(_mocked_get):
+def test_get_javascript_versions_server_response_without_json(_mocked_get):
     """Test the behavior of function get_javascript_versions for server response w/o proper JSON."""
     package_versions = get_javascript_versions("array")
     # empty list is expected
