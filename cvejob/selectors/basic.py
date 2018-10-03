@@ -1,7 +1,10 @@
 """This module contains default package name selector."""
 
+import re
+import itertools
 import logging
-from cpe import CPE
+
+from nvdlib import utils
 
 from cvejob.config import Config
 from cvejob.utils import (
@@ -17,9 +20,11 @@ logger = logging.getLogger(__name__)
 class VersionExistsSelector(object):
     """Selectors which picks winners based on existence of versions mentioned in the CVE record."""
 
-    def __init__(self, cve, candidates):
+    def __init__(self, cve_doc, candidates):
         """Constructor."""
-        self._cve = cve
+        self._doc = cve_doc
+        self._cve = self._doc.cve
+
         self._candidates = candidates
 
     def pick_winner(self):
@@ -27,8 +32,14 @@ class VersionExistsSelector(object):
 
         Or no winner, if all candidates fail the version check.
         """
-        cpe_dicts = self._cve.get_cpe(cpe_type='a', nodes=self._cve.configurations)
-        cpe_versions = self._get_cpe_versions(cpe_dicts)
+        cpe_version_ranges, = utils.rgetattr(self._doc,
+                                             'configurations.nodes.data.version_range')
+
+        cpe_versions = set()
+        for version_range in itertools.chain(*cpe_version_ranges):
+            _, version = re.split(r"[<>=]{,2}", version_range)
+
+            cpe_versions.add(version)
 
         if cpe_versions:
             hit = False
@@ -59,7 +70,7 @@ class VersionExistsSelector(object):
                 if hit:
                     logger.info(
                         '{cve_id} Hit for package name: {package}'.format(
-                            cve_id=self._cve.cve_id, package=package
+                            cve_id=self._cve.id_, package=package
                         )
                     )
                     return candidate
@@ -73,21 +84,3 @@ class VersionExistsSelector(object):
             return get_javascript_versions(package)
         else:
             raise ValueError('Unsupported ecosystem {e}'.format(e=Config.ecosystem))
-
-    def _get_cpe_versions(self, cpe_dicts):
-        cpe_versions = set()
-        for cpe in cpe_dicts:
-            if cpe.versionStartIncluding is not None:
-                cpe_versions.add(cpe.versionStartIncluding)
-            if cpe.versionStartExcluding is not None:
-                cpe_versions.add(cpe.versionStartExcluding)
-            if cpe.versionEndIncluding is not None:
-                cpe_versions.add(cpe.versionEndIncluding)
-            if cpe.versionEndExcluding is not None:
-                cpe_versions.add(cpe.versionEndExcluding)
-
-            uri_version = CPE(cpe.cpe22Uri).get_version()
-            if uri_version:
-                cpe_versions.add(uri_version[0])
-
-        return cpe_versions

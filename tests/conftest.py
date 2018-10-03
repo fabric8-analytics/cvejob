@@ -2,7 +2,7 @@
 
 import pytest
 import json
-from nvdlib.model import CVE
+from nvdlib.model import Document
 
 from cvejob.config import DefaultConfig
 
@@ -11,8 +11,8 @@ from cvejob.config import DefaultConfig
 def javascript_cve():
     """JavaScript CVE fixture."""
     with open('tests/data/javascript-nvdcve.json') as f:
-        nvd_json = json.load(f)
-        return CVE.from_dict(nvd_json['CVE_Items'][0])
+        data, = json.load(f)['CVE_Items']
+        return Document.from_data(data)
 
 
 @pytest.fixture

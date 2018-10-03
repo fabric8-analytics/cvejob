@@ -30,7 +30,7 @@ class NvdToolkitPackageNameIdentifier(NaivePackageNameIdentifier):
         )
 
         results = pipeline.fit_predict(
-            [self._cve.description], classifier__sample=True
+            [self._doc.description], classifier__sample=True
         ).tolist()[0]
 
         candidates = [x[0][0] for x in results]

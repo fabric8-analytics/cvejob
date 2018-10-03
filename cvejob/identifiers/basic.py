@@ -1,13 +1,14 @@
 """This module contains basic (naive) package name identifier."""
 
 import re
+
 import nltk
 from nltk.tokenize import sent_tokenize
 from nltk.corpus import stopwords
 from collections import OrderedDict
 
-from cvejob.utils import run_cpe2pkg
 from cvejob.config import Config
+from cvejob import utils
 
 
 class NaivePackageNameIdentifier(object):
@@ -17,27 +18,38 @@ class NaivePackageNameIdentifier(object):
     are considered to be possible package names (minus stop words).
     """
 
-    def __init__(self, cve):
+    def __init__(self, doc):
         """Constructor."""
-        self._cve = cve
+        self._doc = doc
 
     def _get_vendor_product_pairs(self):
 
         result = set()
-        for cpe in self._cve.get_cpe(cpe_type='a'):
-            result.add((cpe.vendor, cpe.product))
+        for cpe in utils.get_cpe(self._doc, cpe_type='application'):
+
+            vendor = cpe.get_vendor()[0]
+            product = cpe.get_product()[0]
+
+            result.add((vendor, product))
+
         return result
 
     def _get_candidates_from_description(self):
         """Try to identify possible package names from the description."""
         pkg_name_candidates = set()
 
-        sentences = sent_tokenize(self._cve.description)
+        sentences = sent_tokenize(
+            utils.get_description_by_lang(self._doc)
+        )
+
         first_sentence = sentences[0] if sentences else ''
         names = self._guess_from_sentence(first_sentence)
+
         pkg_name_candidates.update(set(names))
+
         return pkg_name_candidates
 
+    # noinspection PyMethodMayBeStatic
     def _guess_from_sentence(self, sentence):
         """Guess possible package name(s) from given description.
 
@@ -76,4 +88,4 @@ class NaivePackageNameIdentifier(object):
             vendor = [ecosystem]
         product = [x[1] for x in vp_pairs] + list(desc_candidates)
 
-        return run_cpe2pkg(vendor, product)
+        return utils.run_cpe2pkg(vendor, product)

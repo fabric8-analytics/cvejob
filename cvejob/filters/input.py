@@ -7,6 +7,7 @@ import nltk
 import requests
 import logging
 import re
+
 from urllib.parse import urlparse
 from collections import namedtuple
 from string import punctuation
@@ -14,17 +15,18 @@ from string import punctuation
 from nltk.stem import PorterStemmer
 
 from cvejob.config import Config
+from cvejob import utils
 
 
 logger = logging.getLogger(__name__)
 
 
-def validate_cve(cve, exclude_checks=None):
+def validate_cve(cve_doc, exclude_checks=None):
     """Validate given CVE against predefined list of checks.
 
     If any of the checks fail, the CVE should not be further processed.
 
-    :param cve: CVE object
+    :param cve_doc: nvdlib.model.Document object
     :param exclude_checks: iterable, list of check classes to exclude
     :return: True if all checks passed, False otherwise.
     """
@@ -50,7 +52,7 @@ def validate_cve(cve, exclude_checks=None):
 
     results = []
     for check in checks:
-        results.append((check.__name__, check(cve).check()))
+        results.append((check.__name__, check(cve_doc).check()))
         if not results[-1][1]:
             # one check failed, no need to continue checking
             break
@@ -62,9 +64,9 @@ def validate_cve(cve, exclude_checks=None):
 class CveCheck(object, metaclass=abc.ABCMeta):
     """Base class for all input checks."""
 
-    def __init__(self, cve):
+    def __init__(self, cve_doc):
         """Constructor."""
-        self._cve = cve
+        self._doc = cve_doc
 
     @abc.abstractmethod
     def check(self):
@@ -80,7 +82,7 @@ class NotOlderThanCheck(CveCheck):
         if config_age == 0:
             return True
         now = datetime.datetime.now()
-        age = now.date() - self._cve.last_modified_date.date()
+        age = now.date() - self._doc.modified_date.date()
         return age.days < config_age
 
 
@@ -89,8 +91,11 @@ class NotUnsupportedFileExtensionCheck(CveCheck):
 
     def check(self):
         """Perform the check."""
-        tokens = nltk.word_tokenize(self._cve.description)
+        description = utils.get_description_by_lang(self._doc)
+
+        tokens = nltk.word_tokenize(description)
         extensions = ('.php', '.c', '.cpp', '.h', '.go')
+
         return not any(x for x in tokens if any(
             y for y in extensions if x.lower().endswith(y)
         ))
@@ -101,7 +106,7 @@ class NotUnderAnalysisCheck(CveCheck):
 
     def check(self):
         """Perform the check."""
-        return bool(self._cve.configurations)
+        return bool(self._doc.configurations)
 
 
 class IsSupportedGitHubLanguageCheck(CveCheck):
@@ -113,9 +118,9 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
 
     _name_whitelist_raw = ('vuln', 'vulnerability', 'poc', 'advisory', 'security', 'cve')
 
-    def __init__(self, cve):
+    def __init__(self, cve_doc):
         """Constructor."""
-        super().__init__(cve)
+        super().__init__(cve_doc)
 
         self._stemmer = PorterStemmer()
         # regexp to split strings on punctuation
@@ -142,7 +147,7 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
 
     def check(self):
         """Perform the check."""
-        refs = self._cve.references
+        refs = utils.rgetattr(self._doc, 'cve.references.data.url')
 
         def is_github_ref(url):
             """Check whether given URL points to GitHub.
@@ -211,7 +216,7 @@ class AffectsApplicationCheck(CveCheck):
 
     def check(self):
         """Perform the check."""
-        if self._cve.get_cpe(cpe_type='a'):
+        if utils.get_cpe(self._doc, cpe_type='application'):
             return True
         return False
 
@@ -241,7 +246,7 @@ class NotUnexpectedSiteInReferencesCheck(CveCheck):
         """Perform the check."""
         current_ecosystem = Config.ecosystem
 
-        for ref in self._cve.references:
+        for ref in utils.rgetattr(self._doc, 'cve.references.data.url'):
 
             ref_parsed = urlparse(ref)
             for ecosystem in self.known_sites:

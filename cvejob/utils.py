@@ -3,9 +3,16 @@
 import subprocess
 import logging
 import requests
+
+import itertools as it
+
 from lxml import etree
 
+from cpe import CPE
+
+from nvdlib.utils import rgetattr
 from cvejob.config import Config
+
 
 logger = logging.getLogger(__name__)
 
@@ -121,3 +128,54 @@ def get_java_versions(package):
     except ValueError:
         # wrong package specification etc.
         return []
+
+
+def get_cpe(doc, cpe_type: str = None) -> list:
+    """Get list of CPE objects.
+
+    :param doc: Document, single Document object from Collection
+    :param cpe_type: str, <type>
+        <type>: any of (or abbreviation of) [application, hardware, operating_system]
+    """
+    valid_cpe_types = ['application', 'hardware', 'operating_system']
+    if cpe_type and not isinstance(cpe_type, str):
+        raise TypeError(f"`cpe_type` expected to be str, got: {type(cpe_type)}")
+
+    type_to_check = None
+
+    if cpe_type is not None:
+        for t in valid_cpe_types:
+            if t.startswith(cpe_type.lower()):
+                type_to_check = t
+                break
+
+        if cpe_type and type_to_check is None:
+            raise ValueError(
+                f"`cpe_type` expected to be any of {valid_cpe_types}"
+            )
+
+    cpe_list = [
+        CPE(cpe_str) for cpe_str in it.chain(*rgetattr(doc, 'configurations.nodes.data.cpe'))
+    ]
+
+    if type_to_check:
+        cpe_list = list(filter(
+            lambda cpe: eval(f"cpe.is_{type_to_check}()"),
+            cpe_list
+        ))
+
+    return cpe_list
+
+
+def get_description_by_lang(doc, lang='en'):
+    """Get description for given language."""
+    desc_data = rgetattr(doc, 'cve.descriptions.data')
+    desc = None
+
+    for node in desc_data:
+        # if no lang value, assume english
+        if getattr(node, 'lang', 'en') == lang:
+            desc = getattr(node, 'value', None)
+            break
+
+    return desc
