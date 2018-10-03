@@ -43,10 +43,12 @@ affected:
 
     @property
     def winner(self):
+        """Return winner."""
         return self._winner
 
     @property
     def candidates(self):
+        """Return candidates."""
         return self._candidates
 
     def _makedirs(self):
