@@ -5,5 +5,5 @@ requests
 beautifulsoup4
 numpy
 scipy
-git+https://github.com/msrb/nvdlib.git#egg=nvdlib
+git+https://github.com/fabric8-analytics/nvdlib.git#egg=nvdlib
 git+https://github.com/fabric8-analytics/fabric8-analytics-nvd-toolkit.git#egg=toolkit
