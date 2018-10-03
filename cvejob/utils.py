@@ -160,7 +160,7 @@ def get_cpe(doc, cpe_type: str = None) -> list:
 
     if type_to_check:
         cpe_list = list(filter(
-            lambda cpe: eval(f"cpe.is_{type_to_check}()"),
+            lambda _cpe: eval(f"_cpe.is_{type_to_check}()"),
             cpe_list
         ))
 
