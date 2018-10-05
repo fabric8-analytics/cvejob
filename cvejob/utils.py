@@ -1,5 +1,8 @@
 """This module contains helper functions."""
 
+import datetime
+import re
+
 import subprocess
 import logging
 import requests
@@ -154,15 +157,21 @@ def get_cpe(doc, cpe_type: str = None) -> list:
                 f"`cpe_type` expected to be any of {valid_cpe_types}"
             )
 
-    cpe_list = [
-        CPE(cpe_str) for cpe_str in it.chain(*rgetattr(doc, 'configurations.nodes.data.cpe'))
-    ]
+    cpe_str_list = rgetattr(doc, 'configurations.nodes.data.cpe')
 
-    if type_to_check:
-        cpe_list = list(filter(
-            lambda _cpe: eval(f"_cpe.is_{type_to_check}()"),
-            cpe_list
-        ))
+    if not any(cpe_str_list):
+        cpe_list = []
+
+    else:
+        cpe_list = [
+            CPE(cpe_str) for cpe_str in it.chain(*cpe_str_list)
+        ]
+
+        if type_to_check:
+            cpe_list = list(filter(
+                lambda _cpe: eval(f"_cpe.is_{type_to_check}()"),
+                cpe_list
+            ))
 
     return cpe_list
 
@@ -179,3 +188,37 @@ def get_description_by_lang(doc, lang='en'):
             break
 
     return desc
+
+
+def parse_date_range(range_string: str):
+    """Parse date range string.
+
+    valid examples:
+        - date_range="YY/MM/DD-YY/MM/DD"
+        - date_range="YY/MM/-YY/MM/"
+        - date_range="YY//-YY//"
+    """
+    valid_date_pattern = r"^(?P<year>[\d]{4})/(?P<month>[\d]{2})?/(?P<date>[\d]{2})?$"
+    matcher = re.compile(valid_date_pattern)
+
+    range_from, range_to = range_string.split(sep='-')
+
+    match_from = matcher.match(range_from)
+    match_to = matcher.match(range_to)
+
+    if not all([match_from, match_to]):
+        raise ValueError(
+            ("Date range '{range_string}' does not match expected format.\n"
+             "\tExpected format: r'{valid_date_pattern}'").format(
+                range_string=range_string,
+                valid_date_pattern=valid_date_pattern
+            ))
+
+    date_from, date_to = [
+        datetime.datetime(*map(
+            lambda s: int(s) if s else 1, match.groups()
+        ))
+        for match in [match_from, match_to]
+    ]
+
+    return date_from, date_to

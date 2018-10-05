@@ -19,6 +19,9 @@ class DefaultConfig(object):
     # path to the default NVD JSON feed
     feed_names = None
 
+    # range of CVES to process, all other CVEs will be ignored
+    date_range = None
+
     # ID of a CVE to process, all other CVEs will be ignored
     cve_id = None
 
@@ -57,6 +60,10 @@ class RuntimeConfig(object):
         feed_names = os.environ.get('CVEJOB_FEED_NAMES')
         if feed_names is not None:
             self._config.feed_names = ','.split(feed_names)
+
+        date_range = os.environ.get('CVEJOB_DATE_RANGE')
+        if date_range is not None:
+            self._config.date_range = date_range
 
         cve_id = os.environ.get('CVEJOB_CVE_ID')
         if cve_id is not None:
