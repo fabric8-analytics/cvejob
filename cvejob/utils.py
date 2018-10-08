@@ -218,23 +218,25 @@ def parse_date_range(range_string: str):
     def parse_year(s):
         return int(s)
 
-    def parse_month(s):
-        return int(s) if s else 12
+    def parse_month(s, sub):
+        return int(s) if s else sub
 
-    def parse_day(s, year, month):
-        return int(s) if s else calendar.monthrange(year, month)[1]
+    def parse_day(s, year, month, sub='first'):
+        default = [calendar.monthrange(year, month)[1], 1][sub == 'first']
+
+        return int(s) if s else default
 
     # This is not a pretty way of parsing the date,
     # but we need to fill in missing values for month and day differently
     year_from = parse_year(match_from.group('year'))
-    month_from = parse_month(match_from.group('month'))
-    day_from = parse_day(match_from.group('day'), year_from, month_from)
+    month_from = parse_month(match_from.group('month'), sub=1)
+    day_from = parse_day(match_from.group('day'), year_from, month_from, 'first')
 
     date_from = datetime.datetime(year_from, month_from, day_from)
 
     year_to = parse_year(match_to.group('year'))
-    month_to = parse_month(match_to.group('month'))
-    day_to = parse_day(match_to.group('day'), year_to, month_to)
+    month_to = parse_month(match_to.group('month'), sub=12)
+    day_to = parse_day(match_to.group('day'), year_to, month_to, 'last')
 
     date_to = datetime.datetime(year_to, month_to, day_to)
 
