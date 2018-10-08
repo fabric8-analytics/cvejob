@@ -23,7 +23,12 @@ You only need to rebuild the image if you update project's dependencies.
 Local code changes will be reflected even without rebuild.
 
 
-## Download NVD data feed:
+## Download NVD data feed (optional):
+
+This step is optional as [cvejob](https://github.com/fabric8-analytics/cvejob) automatically detects and fetches relevant feeds
+ from date range or cherry-picked CVEs. If, however, whole collection of feeds
+ should be examined without explicitly stating date range or cherry-picking CVEs,
+ this script may come in handy.
 
 ```shell
 $ ./get_nvd.sh 2018
@@ -33,12 +38,51 @@ The command above will download all NVD data from 2018.
 
 ## Run the tool:
 
+### 1) Cherry-picking CVE_ID
+
 ```shell
 $ ./docker-run.sh -e CVEJOB_ECOSYSTEM=javascript -e CVEJOB_CVE_ID=CVE-2018-3728
 ```
 
 The command above will look for `CVE-2018-3728` in the NVD feed. If the CVE is there, it will try to map it to a package from NPM ecosystem.
 Results will be stored in the `database/` directory.
+
+
+### 2) Providing date range
+
+Date range has to follow explicit notation that goes as:
+`YYYY/MM/DD`
+
+and hence must match the following regex pattern:
+
+`r"^(?P<year>[\d]{4})/(?P<month>[\d]{2})?/(?P<day>[\d]{2})?$"`
+
+Valid examples:
+- CVEJOB_DATE_RANGE=`'2005/12/31-2006/12/31'`
+- CVEJOB_DATE_RANGE=`'2005/01/-2005/12/31'`
+- CVEJOB_DATE_RANGE=`'2005//-2010//'`
+   
+> NOTE: Both bounds are inclusive
+
+
+```shell
+$ ./docker-run.sh -e CVEJOB_ECOSYSTEM=javascript -e CVEJOB_DATE_RANGE="2017//-2018//"
+```
+
+
+### 3) Combining 1) and 2)
+
+This is useful for optimization as [cvejob](https://github.com/fabric8-analytics/cvejob)
+can check whether the cherry-picked CVE belongs to the version range in advance
+and hence save processing time and resources.
+
+```shell
+$ ./docker-run.sh -e CVEJOB_ECOSYSTEM=javascript -e CVEJOB_CVE_ID=CVE-2018-3728 -e \
+CVEJOB_DATE_RANGE="2017//-2018//"
+```
+
+
+### *) No parameters
 
 Without any parameters, the job will search through the NVD data and look for all CVEs affecting packages in PyPI.
 
