@@ -80,4 +80,4 @@ class TestUtils(unittest.TestCase):
         for invalid in invalid_date_ranges:
 
             with self.assertRaises(ValueError):
-                _ = parse_date_range(invalid)
+                parse_date_range(invalid)
