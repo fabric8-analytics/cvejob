@@ -1,5 +1,6 @@
 """This module contains helper functions."""
 
+import calendar
 import datetime
 import re
 
@@ -194,11 +195,11 @@ def parse_date_range(range_string: str):
     """Parse date range string.
 
     valid examples:
-        - date_range="YY/MM/DD-YY/MM/DD"
-        - date_range="YY/MM/-YY/MM/"
-        - date_range="YY//-YY//"
+        - date_range="YYYY/MM/DD-YYYY/MM/DD"
+        - date_range="YYYY/MM/-YYYY/MM/"
+        - date_range="YYYY//-YYYY//"
     """
-    valid_date_pattern = r"^(?P<year>[\d]{4})/(?P<month>[\d]{2})?/(?P<date>[\d]{2})?$"
+    valid_date_pattern = r"^(?P<year>[\d]{4})/(?P<month>[\d]{2})?/(?P<day>[\d]{2})?$"
     matcher = re.compile(valid_date_pattern)
 
     range_from, range_to = range_string.split(sep='-')
@@ -214,11 +215,27 @@ def parse_date_range(range_string: str):
                 valid_date_pattern=valid_date_pattern
             ))
 
-    date_from, date_to = [
-        datetime.datetime(*map(
-            lambda s: int(s) if s else 1, match.groups()
-        ))
-        for match in [match_from, match_to]
-    ]
+    def parse_year(s):
+        return int(s)
+
+    def parse_month(s):
+        return int(s) if s else 12
+
+    def parse_day(s, year, month):
+        return int(s) if s else calendar.monthrange(year, month)[1]
+
+    # This is not a pretty way of parsing the date,
+    # but we need to fill in missing values for month and day differently
+    year_from = parse_year(match_from.group('year'))
+    month_from = parse_month(match_from.group('month'))
+    day_from = parse_day(match_from.group('day'), year_from, month_from)
+
+    date_from = datetime.datetime(year_from, month_from, day_from)
+
+    year_to = parse_year(match_to.group('year'))
+    month_to = parse_month(match_to.group('month'))
+    day_to = parse_day(match_to.group('day'), year_to, month_to)
+
+    date_to = datetime.datetime(year_to, month_to, day_to)
 
     return date_from, date_to

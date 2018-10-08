@@ -60,6 +60,9 @@ def run():
                     ))
 
                 return
+            else:
+                # prune the feed names as it is not necessary to iterate over all of them
+                feed_names = [cherrypicked_year]
 
     if not feed_names:
 
