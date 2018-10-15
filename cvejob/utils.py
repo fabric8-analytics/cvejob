@@ -85,7 +85,7 @@ def get_javascript_versions(package):
 
     versions = {x for x in response_json.get('versions', {})}
 
-    return list(versions)
+    return list(sorted(versions))
 
 
 def get_python_versions(package):
@@ -97,7 +97,7 @@ def get_python_versions(package):
         logger.error('Unable to obtain a list of versions for {pkg_name}'.format(pkg_name=package))
         return []
 
-    return list({x for x in response.json().get('releases', {})})
+    return list(sorted({x for x in response.json().get('releases', {})}))
 
 
 def get_java_versions(package):
@@ -128,7 +128,8 @@ def get_java_versions(package):
                 'Unable to obtain a list of versions for {package}'.format(package=package)
             )
 
-        return list(versions)
+        return list(sorted(versions))
+
     except ValueError:
         # wrong package specification etc.
         return []

@@ -128,51 +128,57 @@ def run():
 
             cve_id = doc.cve.id_
 
-            try:
+            # try:
 
-                if not validate_cve(doc):
-                    logger.debug(
-                        "[{cve_id}] was filtered out by input checks".format(
-                            cve_id=cve_id
-                        ))
-                    continue
-
-                identifier = get_identifier(doc)
-                candidates = identifier.identify()
-
-                if not candidates:
-                    logger.info(
-                        "[{cve_id}] no package name candidates found".format(
-                            cve_id=cve_id
-                        ))
-                    continue
-
-                selector = VersionExistsSelector(doc, candidates)
-                winner = selector.pick_winner()
-
-                if not winner:
-                    logger.info(
-                        "[{cve_id}] no package name found".format(
-                            cve_id=cve_id
-                        ))
-                    continue
-
-                victims_output = VictimsYamlOutput(doc, winner, candidates)
-                victims_output.write()
-
-                logger.info(
-                    "[{cve_id}] picked `{winner}` out of `{candidates}`".format(
-                        cve_id=cve_id,
-                        winner=victims_output.winner,
-                        candidates=victims_output.candidates
+            if not validate_cve(doc):
+                logger.debug(
+                    "[{cve_id}] was filtered out by input checks".format(
+                        cve_id=cve_id
                     ))
+                continue
 
-            except Exception as exc:
-                logger.warning("[{cve_id}]Unexpected exception occured: "
-                               "{exc}".format(
-                                cve_id=cve_id,
-                                exc=exc
-                               ))
+            identifier = get_identifier(doc)
+            candidates = identifier.identify()
+
+            if not candidates:
+                logger.info(
+                    "[{cve_id}] no package name candidates found".format(
+                        cve_id=cve_id
+                    ))
+                continue
+
+            selector = VersionExistsSelector(doc, candidates)
+            winner, version_ranges = selector.pick_winner()
+
+            if not winner:
+                logger.info(
+                    "[{cve_id}] no package name found".format(
+                        cve_id=cve_id
+                    ))
+                continue
+
+            victims_output = VictimsYamlOutput(doc, winner, candidates, version_ranges)
+            victims_output.write()
+
+            logger.info(
+                "[{cve_id}] picked `{winner}` out of `{candidates}`".format(
+                    cve_id=cve_id,
+                    winner=victims_output.winner,
+                    candidates=victims_output.candidates
+                ))
+
+            logger.info(
+                "[{cve_id}] Affected version range: {version_ranges}".format(
+                    cve_id=cve_id,
+                    version_ranges=version_ranges
+                ))
+
+            # except Exception as exc:
+            #     logger.warning("[{cve_id}]Unexpected exception occured: "
+            #                    "{exc}".format(
+            #                     cve_id=cve_id,
+            #                     exc=exc
+            #                    ))
 
 
 if __name__ == '__main__':
