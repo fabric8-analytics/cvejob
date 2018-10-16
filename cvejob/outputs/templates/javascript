@@ -1,0 +1,19 @@
+---
+cve: {cve}
+title: CVE in {name}
+description: >
+    {description}
+cvss_v2: {cvss_v2}
+references:
+{references}
+affected:
+    - name: {name}
+      version:
+{version}
+      fixedin:
+{fixedin}
+
+
+# ---
+# Candidate scores:
+{candidate_scores}
