@@ -1,8 +1,9 @@
 """This module contains default package name selector."""
 
-import re
 import itertools
+import functools
 import logging
+import re
 
 from nvdlib import utils
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 # noinspection PyTypeChecker
-class VersionExistsSelector(object):
+class VersionSelector(object):
     """Selectors which picks winners based on existence of versions mentioned in the CVE record."""
 
     def __init__(self, cve_doc, candidates):
@@ -34,13 +35,19 @@ class VersionExistsSelector(object):
 
         Or no winner, if all candidates fail the version check.
         """
-        cpe_version_ranges, = utils.rgetattr(self._doc,
-                                             'configurations.nodes.data.version_range')
+        candidate = None
+        affected_version_range = list()
+
+        cpe_version_ranges, p_vec = self._get_version_range_from_doc(self._doc)
+
+        if not cpe_version_ranges:
+            # TODO: try to work with list of versions from 'affected' entry
+            pass
 
         cpe_versions = list()
         ops = dict()
 
-        for version_range in itertools.chain(*cpe_version_ranges):
+        for version_range in cpe_version_ranges:
             _, op, version = re.split(r"([<>=]{,2})", version_range)
 
             ops[version] = op
@@ -56,11 +63,15 @@ class VersionExistsSelector(object):
                 # check if at least one version mentioned in the CVE exists
                 # for given package name; if not, this is a false positive
                 upstream_versions = self._get_upstream_versions(package)
-                version_repl = list(set(cpe_versions) & set(upstream_versions))
+
+                upstream_match = set(cpe_versions) & set(upstream_versions)
+                version_repl = {
+                    ver: repl
+                    for ver, repl in zip(upstream_match, upstream_match)
+                }
 
                 if len(version_repl) == len(cpe_versions):
                     # exact match, great!
-                    version_repl = list(zip(version_repl, version_repl))
                     hit = True
 
                 else:
@@ -82,9 +93,7 @@ class VersionExistsSelector(object):
                                 version_suffix = version_suffix.lstrip('.-_')
                                 if version_suffix and not version_suffix[0].isdigit():
                                     hit = True
-                                    version_repl.append(
-                                        (cpe_version, upstream_version)
-                                    )
+                                    version_repl[cpe_version] = upstream_version
 
                 if hit:
                     logger.debug(
@@ -93,29 +102,12 @@ class VersionExistsSelector(object):
                         )
                     )
 
-                    # list of versions which satisfies the condition
-                    version_subsets = list()
-
-                    for cpe_ver, up_ver in version_repl:
-
-                        op = ops[cpe_ver]
-
-                        subset = list(filter(
-                            # use negative filtering
-                            lambda v: eval("v {} '{}'".format(op, up_ver)),
-                            upstream_versions
-                        ))
-
-                        if subset:
-                            version_subsets.append(subset)
-
-                    affected_versions = list()
-
-                    for p1, p2 in itertools.combinations(version_subsets, 2):
-                        intersect = set(p1) & set(p2)
-
-                        if intersect:
-                            affected_versions.append(sorted(intersect))
+                    affected_versions = self._get_affected_versions(
+                        upstream_versions,
+                        ops,
+                        p_vec,
+                        version_repl
+                    )
 
                     logger.debug(
                         "[{cve_id}] Affected versions: {versions}".format(
@@ -124,15 +116,34 @@ class VersionExistsSelector(object):
                     )
 
                     v_min, v_max = upstream_versions[0], upstream_versions[-1]
+
                     affected_version_range = get_victims_notation(
                         affected_versions,
                         v_min,
                         v_max
                     )
 
-                    return candidate, affected_version_range
+                    break
 
-    def _get_upstream_versions(self, package):
+        return candidate, affected_version_range
+
+    @staticmethod
+    def _get_version_range_from_doc(doc):
+        version_ranges = list()
+        p_vec = list()
+
+        for entry in doc.configurations.nodes:
+            nodes = utils.rgetattr(entry, 'data')
+            for node in nodes:
+                v_range = node.version_range
+
+                p_vec.append(len(v_range))
+                version_ranges.extend(v_range)
+
+        return version_ranges, p_vec
+
+    @staticmethod
+    def _get_upstream_versions(package):
         if Config.ecosystem == 'java':
             return get_java_versions(package)
         elif Config.ecosystem == 'python':
@@ -141,3 +152,67 @@ class VersionExistsSelector(object):
             return get_javascript_versions(package)
         else:
             raise ValueError('Unsupported ecosystem {e}'.format(e=Config.ecosystem))
+
+    @staticmethod
+    def _get_affected_versions(upstream_versions: list,
+                               version_ranges: dict,
+                               p_vec: list,
+                               version_repl: dict):
+        # list of versions which satisfies the condition
+        version_subsets = list()
+
+        for cpe_ver, op in version_ranges.items():
+
+            up_ver = version_repl.get(cpe_ver, cpe_ver)
+
+            subset = list(filter(
+                # use negative filtering
+                lambda v: eval("v {} '{}'".format(op, up_ver)),
+                upstream_versions
+            ))
+
+            if subset:
+                version_subsets.append(subset)
+
+        affected_subsets = list()
+
+        for p1, p2 in itertools.combinations(version_subsets, 2):
+            p1, p2 = set(p1), set(p2)
+            affected = p1 & p2
+
+            if affected:
+                affected_subsets.append(affected)
+
+        affected_versions = list()
+
+        idx = 0
+        for p_idx in p_vec:
+            affected = functools.reduce(
+                set.intersection, map(set, version_subsets[idx:idx + p_idx])
+            )
+
+            if affected:
+                affected_versions.append(sorted(affected))
+
+            idx += p_idx
+
+        return affected_versions
+
+    @staticmethod
+    def _reverse_ops(ops):
+        rev_ops = dict()
+        split_points = list()
+
+        for cpe_ver, op in ops:
+
+            if op.startswith('<'):
+                rev_ops[cpe_ver] = '>' + cpe_ver[2:]
+
+            elif op.startswith('>'):
+                rev_ops[cpe_ver] = '<' + cpe_ver[2:]
+
+            else:
+                # split subsets at this version
+                split_points.append(cpe_ver)
+
+        return rev_ops, split_points

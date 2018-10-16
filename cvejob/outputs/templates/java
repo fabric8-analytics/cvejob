@@ -1,0 +1,20 @@
+---
+cve: {cve}
+title: CVE in {groupId}:{artifactId}
+description: >
+    {description}
+cvss_v2: {cvss_v2}
+references:
+{references}
+affected:
+    - groupId: {groupId}
+      artifactId: {artifactId}
+      version:
+{version}
+      fixedin:
+{fixedin}
+
+
+# ---
+# Candidate scores:
+{candidate_scores}

@@ -3,6 +3,7 @@
 import os
 
 from nvdlib import utils
+from nvdlib.model import Document
 
 from cvejob.config import Config
 
@@ -10,30 +11,33 @@ from cvejob.config import Config
 class VictimsYamlOutput(object):
     """Output writer which produces CVE record in VictimsDB notation."""
 
-    template = """---
-cve: {cve_id}
-title: CVE in {package_name}
-description: >
-    {description}
-cvss_v2: {cvss}
-references:
-    - {refs}
-affected:
-{affected}
+    TEMPLATE_DIR = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "templates/"
+    )
 
-# Additional information:
-# Package name candidates:
-{others}
-"""
-
-    def __init__(self, cve_doc, winner, candidates, version_ranges):
+    def __init__(self,
+                 ecosystem: str,
+                 cve_doc: Document,
+                 winner: dict,
+                 candidates: list,
+                 affected_versions: list,
+                 fixedin: list):
         """Constructor."""
+        self._ecosystem = ecosystem
+
         self._doc = cve_doc
         self._cve = self._doc.cve
         self._winner = winner
         self._candidates = candidates
 
-        self._version_ranges = version_ranges
+        self._affected_versions = affected_versions
+        self._fixedin = fixedin or ['<unknown>']  # TODO
+
+        template_path = os.path.join(self.TEMPLATE_DIR, self._ecosystem)
+
+        with open(template_path, 'r') as f:
+            self._template = f.read()
 
         _, year, cid = self._cve.id_.split('-')
         self._year_dir = 'database/{e}/{y}/'.format(
@@ -53,61 +57,66 @@ affected:
         """Return candidates."""
         return self._candidates
 
-    def _makedirs(self):
-        # make sure the output directory exists
-        try:
-            os.makedirs(self._year_dir)
-        except FileExistsError:
-            pass
-
     def write(self):
         """Generate VictimsDB YAML file."""
-        self._makedirs()
+        os.makedirs(self._year_dir, exist_ok=True)
 
         with open(os.path.join(self._year_dir, '{id}.yaml'.format(id=self._cve_no)), 'w') as f:
 
-            refs = '    - '.join([
-                x + '\n' for x in utils.rgetattr(self._cve, 'references.data.url')
-            ])
+            refs = utils.rgetattr(self._cve, 'references.data.url')
 
             description = "\n".join(utils.rgetattr(self._doc, 'cve.descriptions.data.value'))
 
-            others = []
+            candidate_scores = []
             for result in self._candidates:
-                other_str = "# " + result['score'] + ' ' + result['package']
-                others.append(other_str)
+                score_str = "{package}: {score}".format(
+                    package=result['package'],
+                    score=result['score']
+                )
+                candidate_scores.append(score_str)
 
-            affected = self._get_affected_section()
+            if self._ecosystem == 'java':
+                gid, aid = self._winner['package'].split(':')
+            else:
+                gid, aid = None, None
+
             cvss_score = self._doc.impact.cvss.base_score
 
-            data = self.template.format(
-                cve_id=self._cve_id,
-                package_name=self._winner['package'],
-                cvss=cvss_score,
+            data = self._template.format(
+                cve=self._cve_id,
+                name=self._winner['package'],
+                cvss_v2=cvss_score,
                 description=description,
-                refs=refs,
-                affected=affected,
-                others='\n'.join(others))
+                references=self.format_list(*refs),
+                groupId=gid,
+                artifactId=aid,
+                version=self.format_list(*self._affected_versions, indent=2),
+                fixedin=self.format_list(*self._fixedin, indent=2),
+                candidate_scores=self.format_list(*candidate_scores,
+                                                  indent=1,
+                                                  comment=True)
+            )
+
             f.write(data)
 
-    def _get_affected_section(self):
-        if Config.ecosystem == 'java':
-            gid, aid = self._winner['package'].split(':')
+    @staticmethod
+    def format_list(*args, indent=1, comment=False) -> str:
+        indent = '\t' * indent
+        comment = "# " if comment else ""
 
-            affected = """    - groupId: {gid}
-      artifactId: {aid}
-      version: {version}
-""".format(gid=gid, aid=aid, version='<unable-to-determine>')
-        else:
-            affected = """    - name: {name}
-      version:
-        - "{version}"
-""".format(name=self._winner['package'], version='<unable-to-determine>')
+        formated_list = [
+            "{comment}{indent} - {arg}".format(
+                comment=comment,
+                indent=indent,
+                arg=arg
+            )
+            for arg in args
+        ]
 
-        return affected
+        return "\n".join(formated_list)
 
 
-def get_victims_notation(affected_versions, v_min, v_max):
+def get_victims_notation(affected_versions, v_min, v_max) -> list:
     """Output victims notation for list of affected versions.
 
     For more information about the format: https://github.com/victims/victims-cve-db
@@ -129,7 +138,7 @@ def get_victims_notation(affected_versions, v_min, v_max):
 
             else:
                 # exact version
-                version_range_str = "=={}".format(affected_range)
+                version_range_str = "=={}".format(*affected_range)
 
         else:
             if lo.startswith(hi[0]):

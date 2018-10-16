@@ -12,7 +12,7 @@ from nvdlib.query_selectors import in_range
 from cvejob.filters.input import validate_cve
 from cvejob.config import Config
 from cvejob.identifiers import get_identifier
-from cvejob.selectors.basic import VersionExistsSelector
+from cvejob.selectors.basic import VersionSelector
 from cvejob.outputs.victims import VictimsYamlOutput
 from cvejob.utils import parse_date_range
 
@@ -43,6 +43,10 @@ def run():
 
     if cherrypicked_cve_id:
         cherrypicked_year = cherrypicked_cve_id.split(sep='-')[1]
+
+        if int(cherrypicked_year) < 2002:
+            # all CVEs prior to 2002 are stored in 2002 feed
+            cherrypicked_year = 2002
 
     if date_range:
         date_range = parse_date_range(Config.date_range)
@@ -147,17 +151,26 @@ def run():
                     ))
                 continue
 
-            selector = VersionExistsSelector(doc, candidates)
-            winner, version_ranges = selector.pick_winner()
+            selector = VersionSelector(doc, candidates)
+            winner, affected = selector.pick_winner()
 
             if not winner:
                 logger.info(
                     "[{cve_id}] no package name found".format(
                         cve_id=cve_id
                     ))
+
                 continue
 
-            victims_output = VictimsYamlOutput(doc, winner, candidates, version_ranges)
+            victims_output = VictimsYamlOutput(
+                ecosystem=Config.ecosystem,
+                cve_doc=doc,
+                winner=winner,
+                candidates=candidates,
+                affected_versions=affected,
+                fixedin=None  # TODO
+            )
+
             victims_output.write()
 
             logger.info(
@@ -170,7 +183,7 @@ def run():
             logger.info(
                 "[{cve_id}] Affected version range: {version_ranges}".format(
                     cve_id=cve_id,
-                    version_ranges=version_ranges
+                    version_ranges=affected
                 ))
 
             # except Exception as exc:
