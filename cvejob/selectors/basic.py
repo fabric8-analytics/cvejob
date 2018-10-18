@@ -36,109 +36,144 @@ class VersionSelector(object):
         Or no winner, if all candidates fail the version check.
         """
         candidate = None
-        affected_version_range = list()
+        cpe_entries = self._get_cpe_entries()
 
-        cpe_version_ranges, p_vec = self._get_version_range_from_doc(self._doc)
+        for cpe_nodes in cpe_entries:
 
-        if not cpe_version_ranges:
-            # TODO: try to work with list of versions from 'affected' entry
-            pass
+            safe_version_range = list()
+            affected_version_range = list()
 
-        cpe_versions = list()
-        ops = dict()
+            cpe_version_ranges, p_vec = self._get_version_ranges(cpe_nodes)
 
-        for version_range in cpe_version_ranges:
-            _, op, version = re.split(r"([<>=]{,2})", version_range)
+            if not cpe_version_ranges:
+                # TODO: try to work with list of versions from 'affected' entry
+                pass
 
-            ops[version] = op
-            cpe_versions.append(version)
+            cpe_versions = list()
+            ops = dict()
 
-        if cpe_versions:
+            for version_range in cpe_version_ranges:
+                _, op, version = re.split(r"([<>=]{,2})", version_range)
 
-            hit = False
+                ops[version] = op
+                cpe_versions.append(version)
 
-            for candidate in self._candidates:
-                package = candidate['package']
+            if cpe_versions:
 
-                # check if at least one version mentioned in the CVE exists
-                # for given package name; if not, this is a false positive
-                upstream_versions = self._get_upstream_versions(package)
+                for candidate in self._candidates:
+                    package = candidate['package']
 
-                upstream_match = set(cpe_versions) & set(upstream_versions)
-                version_repl = {
-                    ver: repl
-                    for ver, repl in zip(upstream_match, upstream_match)
-                }
+                    hit, upstream_versions, version_repl = self.evaluate_package(
+                        package, cpe_versions
+                    )
+
+                    if hit:
+                        logger.debug(
+                            "[{cve_id}] Hit for package name: {package}".format(
+                                cve_id=self._cve.id_, package=package
+                            )
+                        )
+
+                        affected_versions = self._get_affected_versions(
+                            upstream_versions,
+                            ops,
+                            p_vec,
+                            version_repl
+                        )
+
+                        logger.debug(
+                            "[{cve_id}] Affected versions: {versions}".format(
+                                cve_id=self._cve.id_, versions=affected_versions
+                            )
+                        )
+
+                        v_min, v_max = upstream_versions[0], upstream_versions[-1]
+
+                        affected_version_range = get_victims_notation(
+                            affected_versions,
+                            v_min,
+                            v_max
+                        )
+
+                        safe_versions = self._get_safe_versions(
+                            upstream_versions,
+                            affected_versions
+                        )
+
+                        logger.debug(
+                            "[{cve_id}] Safe versions: {versions}".format(
+                                cve_id=self._cve.id_, versions=safe_versions
+                            )
+                        )
+
+                        safe_version_range = get_victims_notation(
+                            safe_versions,
+                            v_min,
+                            v_max,
+                        )
+
+                        break
+
+            return candidate, affected_version_range, safe_version_range
+
+    def evaluate_package(self, package, cpe_versions):
+        hit = False
+
+        # check if at least one version mentioned in the CVE exists
+        # for given package name; if not, this is a false positive
+        upstream_versions = self._get_upstream_versions(package)
+
+        upstream_match = set(cpe_versions) & set(upstream_versions)
+        version_repl = {
+            ver: repl
+            for ver, repl in zip(upstream_match, upstream_match)
+        }
+
+        if len(version_repl) == len(cpe_versions):
+            # exact match for all the versions, great!
+            hit = True
+
+        else:
+            # upstream versions sometime contain suffixes like '.Final', '.RELEASE', etc.,
+            # but those are ignored by NVD. try to detect such cases here.
+            for upstream_version in upstream_versions:
 
                 if len(version_repl) == len(cpe_versions):
-                    # exact match, great!
-                    hit = True
-
-                else:
-                    # upstream versions sometime contain suffixes like '.Final', '.RELEASE', etc.,
-                    # but those are ignored by NVD. try to detect such cases here.
-                    for upstream_version in upstream_versions:
-
-                        if len(version_repl) == len(cpe_versions):
-                            # done
-                            break
-
-                        for cpe_version in cpe_versions:
-                            if not upstream_version.startswith(cpe_version):
-                                # assume both are sorted
-                                break
-
-                            if len(upstream_version) > len(cpe_version):
-                                version_suffix = upstream_version[len(cpe_version):]
-                                version_suffix = version_suffix.lstrip('.-_')
-                                if version_suffix and not version_suffix[0].isdigit():
-                                    hit = True
-                                    version_repl[cpe_version] = upstream_version
-
-                if hit:
-                    logger.debug(
-                        "[{cve_id}] Hit for package name: {package}".format(
-                            cve_id=self._cve.id_, package=package
-                        )
-                    )
-
-                    affected_versions = self._get_affected_versions(
-                        upstream_versions,
-                        ops,
-                        p_vec,
-                        version_repl
-                    )
-
-                    logger.debug(
-                        "[{cve_id}] Affected versions: {versions}".format(
-                            cve_id=self._cve.id_, versions=affected_versions
-                        )
-                    )
-
-                    v_min, v_max = upstream_versions[0], upstream_versions[-1]
-
-                    affected_version_range = get_victims_notation(
-                        affected_versions,
-                        v_min,
-                        v_max
-                    )
-
+                    # done
                     break
 
-        return candidate, affected_version_range
+                for cpe_version in cpe_versions:
+                    if not upstream_version.startswith(cpe_version):
+                        # assume both are sorted
+                        break
+
+                    if len(upstream_version) > len(cpe_version):
+                        version_suffix = upstream_version[len(cpe_version):]
+                        version_suffix = version_suffix.lstrip('.-_')
+                        if version_suffix and not version_suffix[0].isdigit():
+                            hit = True
+                            version_repl[cpe_version] = upstream_version
+
+        return hit, upstream_versions, version_repl
+
+    def _get_cpe_entries(self):
+        entries = list()
+
+        for entry in self._doc.configurations.nodes:
+            entries.append(utils.rgetattr(entry, 'data'))
+
+        return entries
 
     @staticmethod
-    def _get_version_range_from_doc(doc):
-        version_ranges = list()
-        p_vec = list()
+    def _get_version_ranges(node):
+        version_ranges = utils.rgetattr(node, 'version_range')
+        p_vec = [
+            len(v_range)
+            for v_range in version_ranges
+        ]
 
-        for entry in doc.configurations.nodes:
-            nodes = utils.rgetattr(entry, 'data')
-            for node in nodes:
-                v_range = node.version_range
-
-                p_vec.append(len(v_range))
-                version_ranges.extend(v_range)
+        # flatten version_ranges
+        version_ranges = list(itertools.chain(*version_ranges))
 
         return version_ranges, p_vec
 
@@ -160,6 +195,8 @@ class VersionSelector(object):
                                version_repl: dict):
         # list of versions which satisfies the condition
         version_subsets = list()
+
+        print(upstream_versions, version_subsets)
 
         for cpe_ver, op in version_ranges.items():
 
@@ -199,20 +236,24 @@ class VersionSelector(object):
         return affected_versions
 
     @staticmethod
-    def _reverse_ops(ops):
-        rev_ops = dict()
-        split_points = list()
+    def _get_safe_versions(upstream_versions: list,
+                           affected_versions: list):
 
-        for cpe_ver, op in ops:
+        safe_version_subset = list()
 
-            if op.startswith('<'):
-                rev_ops[cpe_ver] = '>' + cpe_ver[2:]
+        for version_subset in affected_versions:
+            lo, hi = version_subset[0], version_subset[-1]
 
-            elif op.startswith('>'):
-                rev_ops[cpe_ver] = '<' + cpe_ver[2:]
+            idx = upstream_versions.index(lo)
 
-            else:
-                # split subsets at this version
-                split_points.append(cpe_ver)
+            safe_versions = upstream_versions[:idx]
+            if safe_versions:
+                safe_version_subset.append(safe_versions)
 
-        return rev_ops, split_points
+            next_idx = upstream_versions.index(hi) + 1
+            upstream_versions = upstream_versions[next_idx:]
+
+        # add whats left
+        safe_version_subset.append(upstream_versions)
+
+        return safe_version_subset

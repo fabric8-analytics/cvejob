@@ -1,6 +1,9 @@
 """This module contains output writer which produces CVE record in VictimsDB notation."""
 
 import os
+import re
+
+from functools import reduce
 
 from nvdlib import utils
 from nvdlib.model import Document
@@ -116,7 +119,9 @@ class VictimsYamlOutput(object):
         return "\n".join(formated_list)
 
 
-def get_victims_notation(affected_versions, v_min, v_max) -> list:
+def get_victims_notation(affected_versions,
+                         v_min,
+                         v_max) -> list:
     """Output victims notation for list of affected versions.
 
     For more information about the format: https://github.com/victims/victims-cve-db
@@ -126,6 +131,7 @@ def get_victims_notation(affected_versions, v_min, v_max) -> list:
     for affected_range in affected_versions:
 
         lo, hi = affected_range[0], affected_range[-1]
+        print('low:', lo, 'high:', hi)
 
         if len(affected_range) == 1:
             if hi == v_max:
@@ -141,8 +147,13 @@ def get_victims_notation(affected_versions, v_min, v_max) -> list:
                 version_range_str = "=={}".format(*affected_range)
 
         else:
-            if lo.startswith(hi[0]):
-                # same major
+            cut = [hi[i] for i in range(len(hi)) if lo[i] == hi[i]]
+            diff = len(hi) - len(cut)
+
+            if re.match(r"^(0)|(.{0})$", lo[-diff:]):
+
+                # same major and potentially minor,
+                # but allow only finite versions ending with .0
                 version_range_str = "<={high},{low}".format(
                     high=hi, low=lo)
             else:
@@ -151,11 +162,28 @@ def get_victims_notation(affected_versions, v_min, v_max) -> list:
 
                 else:
                     # general range -- split into two entries
-                    version_range_str = ">={low}".format(low=lo)
-                    affected_version_range.append(version_range_str)
 
-                    version_range_str = "<={high}".format(high=hi)
+                    if hi != v_max:
+                        version_range_str = ">={low}".format(low=lo)
+                        affected_version_range.append(version_range_str)
+
+                        version_range_str = "<={high}".format(high=hi)
+                    else:
+                        version_range_str = ">={low}".format(low=lo)
 
         affected_version_range.append(version_range_str)
 
     return affected_version_range
+
+
+def reverse_version_string(version_string: str):
+
+    v_string = version_string
+
+    if version_string.startswith('<'):
+        v_string = '>' + version_string[1:]
+
+    elif version_string.startswith('>'):
+        v_string = '<' + version_string[1:]
+
+    return v_string
