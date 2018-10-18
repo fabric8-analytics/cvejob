@@ -152,7 +152,7 @@ def run():
                 continue
 
             selector = VersionSelector(doc, candidates)
-            winner, affected = selector.pick_winner()
+            winner, affected, safe = selector.pick_winner()
 
             if not winner:
                 logger.info(
@@ -168,7 +168,7 @@ def run():
                 winner=winner,
                 candidates=candidates,
                 affected_versions=affected,
-                fixedin=None  # TODO
+                fixedin=safe
             )
 
             victims_output.write()
@@ -184,6 +184,12 @@ def run():
                 "[{cve_id}] Affected version range: {version_ranges}".format(
                     cve_id=cve_id,
                     version_ranges=affected
+                ))
+
+            logger.info(
+                "[{cve_id}] Safe version range: {version_ranges}".format(
+                    cve_id=cve_id,
+                    version_ranges=safe
                 ))
 
             # except Exception as exc:
