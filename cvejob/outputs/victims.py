@@ -3,8 +3,6 @@
 import os
 import re
 
-from functools import reduce
-
 from nvdlib import utils
 from nvdlib.model import Document
 
@@ -24,7 +22,7 @@ class VictimsYamlOutput(object):
                  cve_doc: Document,
                  winner: dict,
                  candidates: list,
-                 affected_versions: list,
+                 affected: list,
                  fixedin: list):
         """Constructor."""
         self._ecosystem = ecosystem
@@ -34,8 +32,8 @@ class VictimsYamlOutput(object):
         self._winner = winner
         self._candidates = candidates
 
-        self._affected_versions = affected_versions
-        self._fixedin = fixedin or ['<unknown>']  # TODO
+        self._affected_versions = affected
+        self._safe_versions = fixedin or ['<unknown>']  # TODO
 
         template_path = os.path.join(self.TEMPLATE_DIR, self._ecosystem)
 
@@ -49,6 +47,21 @@ class VictimsYamlOutput(object):
         )
         self._cve_no = cid
         self._cve_id = '{y}-{n}'.format(y=year, n=cid)
+
+    @property
+    def cve(self):
+        """Return CVE object."""
+        return self._cve
+
+    @property
+    def affected_versions(self):
+        """Return affected versions."""
+        return self._affected_versions
+
+    @property
+    def safe_versions(self):
+        """Return safe versions."""
+        return self._safe_versions
 
     @property
     def winner(self):
@@ -94,7 +107,7 @@ class VictimsYamlOutput(object):
                 groupId=gid,
                 artifactId=aid,
                 version=self.format_list(*self._affected_versions, indent=2),
-                fixedin=self.format_list(*self._fixedin, indent=2),
+                fixedin=self.format_list(*self._safe_versions, indent=2),
                 candidate_scores=self.format_list(*candidate_scores,
                                                   indent=1,
                                                   comment=True)
@@ -104,6 +117,7 @@ class VictimsYamlOutput(object):
 
     @staticmethod
     def format_list(*args, indent=1, comment=False) -> str:
+        """Format list to yaml ouptut."""
         indent = '\t' * indent
         comment = "# " if comment else ""
 
@@ -131,7 +145,6 @@ def get_victims_notation(affected_versions,
     for affected_range in affected_versions:
 
         lo, hi = affected_range[0], affected_range[-1]
-        print('low:', lo, 'high:', hi)
 
         if len(affected_range) == 1:
             if hi == v_max:
@@ -147,10 +160,13 @@ def get_victims_notation(affected_versions,
                 version_range_str = "=={}".format(*affected_range)
 
         else:
-            cut = [hi[i] for i in range(len(hi)) if lo[i] == hi[i]]
+            cut = [
+                hi[i] for i in range(min(len(hi), len(lo)))
+                if lo[i] == hi[i]]
+
             diff = len(hi) - len(cut)
 
-            if re.match(r"^(0)|(.{0})$", lo[-diff:]):
+            if hi[:diff] == lo[:diff] and re.match(r"^(0)|(.{0})$", lo[-diff:]):
 
                 # same major and potentially minor,
                 # but allow only finite versions ending with .0
@@ -177,7 +193,7 @@ def get_victims_notation(affected_versions,
 
 
 def reverse_version_string(version_string: str):
-
+    """Reverse version string."""
     v_string = version_string
 
     if version_string.startswith('<'):

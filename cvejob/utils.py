@@ -15,7 +15,9 @@ from lxml import etree
 from cpe import CPE
 
 from nvdlib.utils import rgetattr
+
 from cvejob.config import Config
+from cvejob.version import BenevolentVersion
 
 
 logger = logging.getLogger(__name__)
@@ -85,7 +87,7 @@ def get_javascript_versions(package):
 
     versions = {x for x in response_json.get('versions', {})}
 
-    return list(sorted(versions))
+    return sort_versions(versions)
 
 
 def get_python_versions(package):
@@ -97,7 +99,7 @@ def get_python_versions(package):
         logger.error('Unable to obtain a list of versions for {pkg_name}'.format(pkg_name=package))
         return []
 
-    return list(sorted({x for x in response.json().get('releases', {})}))
+    return sort_versions({x for x in response.json().get('releases', {})})
 
 
 def get_java_versions(package):
@@ -128,7 +130,7 @@ def get_java_versions(package):
                 'Unable to obtain a list of versions for {package}'.format(package=package)
             )
 
-        return list(sorted(versions))
+        return sort_versions(versions)
 
     except ValueError:
         # wrong package specification etc.
@@ -159,7 +161,7 @@ def get_cpe(doc, cpe_type: str = None) -> list:
                 f"`cpe_type` expected to be any of {valid_cpe_types}"
             )
 
-    cpe_str_list = rgetattr(doc, 'configurations.nodes.data.cpe')
+    cpe_str_list = rgetattr(doc, 'configurations.nodes.data.cpe') or []
 
     if not any(cpe_str_list):
         cpe_list = []
@@ -242,3 +244,14 @@ def parse_date_range(range_string: str):
     date_to = datetime.datetime(year_to, month_to, day_to)
 
     return date_from, date_to
+
+
+def sort_versions(versions, descending=False):
+    """Sort versions in ascending order."""
+    version_list = [
+        (v, BenevolentVersion(v)) for v in versions
+    ]
+
+    sorted_versions = sorted(version_list, key=lambda v: v[1], reverse=descending)
+
+    return [v for v, bv in sorted_versions]

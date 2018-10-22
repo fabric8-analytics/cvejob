@@ -12,7 +12,8 @@ from cvejob.outputs.victims import get_victims_notation
 from cvejob.utils import (
     get_java_versions,
     get_javascript_versions,
-    get_python_versions
+    get_python_versions,
+    sort_versions
 )
 
 
@@ -36,18 +37,27 @@ class VersionSelector(object):
         Or no winner, if all candidates fail the version check.
         """
         candidate = None
+        safe_version_range = list()
+        affected_version_range = list()
+
         cpe_entries = self._get_cpe_entries()
 
         for cpe_nodes in cpe_entries:
 
-            safe_version_range = list()
-            affected_version_range = list()
+            if candidate:
+                break
 
-            cpe_version_ranges, p_vec = self._get_version_ranges(cpe_nodes)
-
-            if not cpe_version_ranges:
+            try:
+                cpe_version_ranges, p_vec = self._get_version_ranges(cpe_nodes)
+            except TypeError:
                 # TODO: try to work with list of versions from 'affected' entry
-                pass
+                logger.debug(
+                    "[{cve_id}] Unable to find version range for cpes: {cpe_nodes}".format(
+                        cve_id=self._cve.id_,
+                        cpe_nodes=utils.rgetattr(cpe_nodes, 'cpe')
+                    )
+                )
+                continue
 
             cpe_versions = list()
             ops = dict()
@@ -65,6 +75,11 @@ class VersionSelector(object):
 
                     hit, upstream_versions, version_repl = self.evaluate_package(
                         package, cpe_versions
+                    )
+                    logger.debug(
+                        "[{cve_id}] Upstream versions found: {versions}".format(
+                            cve_id=self._cve.id_, versions=upstream_versions
+                        )
                     )
 
                     if hit:
@@ -114,9 +129,15 @@ class VersionSelector(object):
 
                         break
 
-            return candidate, affected_version_range, safe_version_range
+                    candidate = None
+
+        return candidate, affected_version_range, safe_version_range
 
     def evaluate_package(self, package, cpe_versions):
+        """Evaluate package w.r.t given cpe versions.
+
+        This method checks whether a package is suitable candidate.
+        """
         hit = False
 
         # check if at least one version mentioned in the CVE exists
@@ -157,6 +178,7 @@ class VersionSelector(object):
         return hit, upstream_versions, version_repl
 
     def _get_cpe_entries(self):
+        """Get CPE entries from configurations node."""
         entries = list()
 
         for entry in self._doc.configurations.nodes:
@@ -166,7 +188,9 @@ class VersionSelector(object):
 
     @staticmethod
     def _get_version_ranges(node):
+        """Get version ranges in a suitable format."""
         version_ranges = utils.rgetattr(node, 'version_range')
+
         p_vec = [
             len(v_range)
             for v_range in version_ranges
@@ -179,6 +203,7 @@ class VersionSelector(object):
 
     @staticmethod
     def _get_upstream_versions(package):
+        """Get upstream versions for a given package and ecosystem."""
         if Config.ecosystem == 'java':
             return get_java_versions(package)
         elif Config.ecosystem == 'python':
@@ -193,10 +218,9 @@ class VersionSelector(object):
                                version_ranges: dict,
                                p_vec: list,
                                version_repl: dict):
+        """Get list of affected upstream versions."""
         # list of versions which satisfies the condition
         version_subsets = list()
-
-        print(upstream_versions, version_subsets)
 
         for cpe_ver, op in version_ranges.items():
 
@@ -204,32 +228,27 @@ class VersionSelector(object):
 
             subset = list(filter(
                 # use negative filtering
-                lambda v: eval("v {} '{}'".format(op, up_ver)),
+                lambda _v: eval("_v {} '{}'".format(op, up_ver)),
                 upstream_versions
             ))
 
             if subset:
                 version_subsets.append(subset)
 
-        affected_subsets = list()
-
-        for p1, p2 in itertools.combinations(version_subsets, 2):
-            p1, p2 = set(p1), set(p2)
-            affected = p1 & p2
-
-            if affected:
-                affected_subsets.append(affected)
-
         affected_versions = list()
 
         idx = 0
         for p_idx in p_vec:
+            subset = version_subsets[idx:idx + p_idx]
+            if not subset:
+                continue
+
             affected = functools.reduce(
-                set.intersection, map(set, version_subsets[idx:idx + p_idx])
+                set.intersection, map(set, subset)
             )
 
             if affected:
-                affected_versions.append(sorted(affected))
+                affected_versions.append(sort_versions(affected))
 
             idx += p_idx
 
@@ -238,7 +257,7 @@ class VersionSelector(object):
     @staticmethod
     def _get_safe_versions(upstream_versions: list,
                            affected_versions: list):
-
+        """Get list of safe upstream versions."""
         safe_version_subset = list()
 
         for version_subset in affected_versions:
