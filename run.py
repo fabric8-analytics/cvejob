@@ -32,6 +32,56 @@ FEED_NAME_PATTERN = r"nvdcve-" \
                     r".json"
 
 
+def _log_results(victims_output):
+    """Log results."""
+    cve_id = victims_output.cve.id_
+
+    logger.info(
+        "[{cve_id}] picked `{winner}` out of `{candidates}`".format(
+            cve_id=cve_id,
+            winner=victims_output.winner,
+            candidates=victims_output.candidates
+        ))
+
+    logger.info(
+        "[{cve_id}] Affected version range: {version_ranges}".format(
+            cve_id=cve_id,
+            version_ranges=victims_output.affected_versions
+        ))
+
+    logger.info(
+        "[{cve_id}] Safe version range: {version_ranges}".format(
+            cve_id=cve_id,
+            version_ranges=victims_output.safe_versions
+        ))
+
+
+def _filter_collection(collection, date_range, cherry_pick):
+    """Filter Document collection."""
+    if date_range:
+        collection_size_before = collection.count()
+
+        collection = collection.find(
+            {'published_date': in_range(*date_range)}
+        )
+
+        logger.debug(("Filtered out {} Documents that do not fall "
+                      "in the given range.").format(
+            collection_size_before - collection.count()
+        ))
+
+    if cherry_pick:
+
+        logger.debug("Cherry-picked CVE `{cve_id}`".format(
+            cve_id=cherry_pick
+        ))
+        collection = collection.find(
+            {'cve.id_': cherry_pick}
+        )
+
+    return collection
+
+
 def run():
     """Run CVEjob."""
     feed_dir = Config.feed_dir
@@ -94,45 +144,27 @@ def run():
             feed_names=feed_names, data_dir=feed_dir
         )
         collection = feed_manager.collect(feeds)
+        collection = _filter_collection(collection,
+                                        date_range,
+                                        cherrypicked_cve_id)
 
-        if date_range:
-            collection_size_before = collection.count()
-
-            collection = collection.find(
-                {'published_date': in_range(*date_range)}
-            )
-
-            logger.debug(("Filtered out {} Documents that do not fall "
-                         "in the given range.").format(
-                collection_size_before - collection.count()
+    if not collection:  # collection is empty
+        logger.info(
+            "Collection is empty.".format(
+                picked_cve_id=cherrypicked_cve_id,
             ))
 
-        if cherrypicked_cve_id:
+        return
 
-            logger.debug("Cherry-picked CVE `{cve_id}`".format(
-                cve_id=cherrypicked_cve_id
-            ))
-            collection = collection.find(
-                {'cve.id_': cherrypicked_cve_id}
-            )
+    logger.debug("Number of CVE Documents in the collection: {}".format(
+        collection.count()
+    ))
 
-        if not collection:  # collection is empty
-            logger.info(
-                "Collection is empty.".format(
-                    picked_cve_id=cherrypicked_cve_id,
-                ))
+    for doc in collection:
 
-            return
+        cve_id = doc.cve.id_
 
-        logger.debug("Number of CVE Documents in the collection: {}".format(
-            collection.count()
-        ))
-
-        for doc in collection:
-
-            cve_id = doc.cve.id_
-
-            # try:
+        try:
 
             if not validate_cve(doc):
                 logger.debug(
@@ -167,37 +199,21 @@ def run():
                 cve_doc=doc,
                 winner=winner,
                 candidates=candidates,
-                affected_versions=affected,
+                affected=affected,
                 fixedin=safe
             )
 
+            _log_results(victims_output)
+
             victims_output.write()
 
-            logger.info(
-                "[{cve_id}] picked `{winner}` out of `{candidates}`".format(
-                    cve_id=cve_id,
-                    winner=victims_output.winner,
-                    candidates=victims_output.candidates
-                ))
+        except Exception as exc:
 
-            logger.info(
-                "[{cve_id}] Affected version range: {version_ranges}".format(
+            logger.warning(
+                "[{cve_id}] Unexpected exception occurred: {exc}".format(
                     cve_id=cve_id,
-                    version_ranges=affected
+                    exc=exc
                 ))
-
-            logger.info(
-                "[{cve_id}] Safe version range: {version_ranges}".format(
-                    cve_id=cve_id,
-                    version_ranges=safe
-                ))
-
-            # except Exception as exc:
-            #     logger.warning("[{cve_id}]Unexpected exception occured: "
-            #                    "{exc}".format(
-            #                     cve_id=cve_id,
-            #                     exc=exc
-            #                    ))
 
 
 if __name__ == '__main__':
