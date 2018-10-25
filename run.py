@@ -213,7 +213,7 @@ def run():
                 "[{cve_id}] Unexpected exception occurred: {exc}".format(
                     cve_id=cve_id,
                     exc=exc
-                ))
+                ), exc_info=True)
 
 
 if __name__ == '__main__':
