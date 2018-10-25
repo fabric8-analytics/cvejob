@@ -14,6 +14,12 @@ def test_get_victims_affected_notation():
     assert '<=2.0,1.9' in results
     assert '<=2.2.2,2.2' in results
 
+    affected_versions = [['2.2', '2.2.1', '2.2.2']]
+
+    results = get_victims_affected_notation(affected_versions, '2.2', '2.3.1')
+    assert len(results) == 1
+    assert '<=2.2.2' in results
+
 
 def test_get_victims_affected_notation_empty():
     """Test get_victims_affected_notation() for empty range."""
