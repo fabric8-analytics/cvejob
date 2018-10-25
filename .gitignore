@@ -8,3 +8,4 @@ venv/
 *.jar
 /data/*-packages
 .coverage
+nvd-data/
