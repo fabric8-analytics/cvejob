@@ -144,6 +144,9 @@ def get_victims_affected_notation(affected_versions,
 
     for affected_range in affected_versions:
 
+        if not affected_range:
+            continue
+
         lo, hi = affected_range[0], affected_range[-1]
 
         if len(affected_range) == 1:
@@ -176,6 +179,9 @@ def get_victims_fixedin_notation(safe_versions,
     fixedin_version_range = list()
 
     for safe_range in safe_versions:
+
+        if not safe_range:
+            continue
 
         lo, hi = safe_range[0], safe_range[-1]
 
