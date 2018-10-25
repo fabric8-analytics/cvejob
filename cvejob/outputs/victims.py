@@ -107,10 +107,7 @@ class VictimsYamlOutput(object):
                 groupId=gid,
                 artifactId=aid,
                 version=self.format_list(*self._affected_versions, indent=2),
-                fixedin=self.format_list(*self._safe_versions, indent=2),
-                candidate_scores=self.format_list(*candidate_scores,
-                                                  indent=1,
-                                                  comment=True)
+                fixedin=self.format_list(*self._safe_versions, indent=2)
             )
 
             f.write(data)
