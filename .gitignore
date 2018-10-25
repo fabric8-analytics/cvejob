@@ -9,3 +9,5 @@ venv/
 /data/*-packages
 .coverage
 nvd-data/
+html/
+latex/
