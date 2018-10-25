@@ -115,11 +115,11 @@ class VictimsYamlOutput(object):
     @staticmethod
     def format_list(*args, indent=1, comment=False) -> str:
         """Format list to yaml ouptut."""
-        indent = '\t' * indent
+        indent = ' ' * (indent * 4)
         comment = "# " if comment else ""
 
         formated_list = [
-            "{comment}{indent} - {arg}".format(
+            "{comment}{indent}- {arg}".format(
                 comment=comment,
                 indent=indent,
                 arg=arg
