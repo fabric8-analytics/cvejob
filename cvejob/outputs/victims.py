@@ -133,9 +133,9 @@ class VictimsYamlOutput(object):
         return "\n".join(formated_list)
 
 
-def get_victims_notation(affected_versions,
-                         v_min,
-                         v_max) -> list:
+def get_victims_affected_notation(affected_versions,
+                                  v_min,
+                                  v_max) -> list:
     """Output victims notation for list of affected versions.
 
     For more information about the format: https://github.com/victims/victims-cve-db
@@ -158,38 +158,44 @@ def get_victims_notation(affected_versions,
             else:
                 # exact version
                 version_range_str = "=={}".format(*affected_range)
-
         else:
-            cut = [
-                hi[i] for i in range(min(len(hi), len(lo)))
-                if lo[i] == hi[i]]
-
-            diff = len(hi) - len(cut)
-
-            if hi[:diff] == lo[:diff] and re.match(r"^(0)|(.{0})$", lo[-diff:]):
-
-                # same major and potentially minor,
-                # but allow only finite versions ending with .0
-                version_range_str = "<={high},{low}".format(
-                    high=hi, low=lo)
-            else:
-                if lo == v_min:
-                    version_range_str = "<={high}".format(high=hi)
-
-                else:
-                    # general range -- split into two entries
-
-                    if hi != v_max:
-                        version_range_str = ">={low}".format(low=lo)
-                        affected_version_range.append(version_range_str)
-
-                        version_range_str = "<={high}".format(high=hi)
-                    else:
-                        version_range_str = ">={low}".format(low=lo)
+            version_range_str = "<={high},{low}".format(high=hi, low=lo)
 
         affected_version_range.append(version_range_str)
 
     return affected_version_range
+
+
+def get_victims_fixedin_notation(safe_versions,
+                                 v_min,
+                                 v_max) -> list:
+    """Output victims notation for a list of safe versions.
+
+    For more information about the format: https://github.com/victims/victims-cve-db
+    """
+    fixedin_version_range = list()
+
+    for safe_range in safe_versions:
+
+        lo, hi = safe_range[0], safe_range[-1]
+
+        if hi == v_max:
+            # fixed from the lowest version onwards
+            version_range_str = ">=" + lo
+
+        elif lo == v_min:
+            # safe versions, but these were never vulnerable
+            # TODO: do we really want to skip them?
+            continue
+        elif len(safe_range) == 1:
+            # exact version
+            version_range_str = "=={}".format(*safe_range)
+        else:
+            version_range_str = "<={high},{low}".format(high=hi, low=lo)
+
+        fixedin_version_range.append(version_range_str)
+
+    return fixedin_version_range
 
 
 def reverse_version_string(version_string: str):

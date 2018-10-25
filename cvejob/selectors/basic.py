@@ -105,7 +105,7 @@ class VersionSelector(object):
 
                         v_min, v_max = upstream_versions[0], upstream_versions[-1]
 
-                        affected_version_range = get_victims_notation(
+                        affected_version_range = get_victims_affected_notation(
                             affected_versions,
                             v_min,
                             v_max
@@ -122,7 +122,7 @@ class VersionSelector(object):
                             )
                         )
 
-                        safe_version_range = get_victims_notation(
+                        safe_version_range = get_victims_fixedin_notation(
                             safe_versions,
                             v_min,
                             v_max,
