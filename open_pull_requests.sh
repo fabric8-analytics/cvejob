@@ -18,7 +18,7 @@ for f in ${files}; do
     number=${number_yaml%.yaml}
     year=$(basename `dirname "$f"`)
     cve_id="CVE-${year}-${number}"
-    branch=${cve_id}-${BUILD_NUMBER}
+    branch=${cve_id}-1
     git checkout -b ${branch}
     git add "$f"
     git commit -m "Add $cve_id"
@@ -33,5 +33,5 @@ for f in ${files}; do
         \"base\": \"master\" \
     } \
 " https://api.github.com/repos/fabric8-analytics/cvedb/pulls
-
+break
 done
