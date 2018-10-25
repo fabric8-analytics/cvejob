@@ -8,7 +8,8 @@ import re
 from nvdlib import utils
 
 from cvejob.config import Config
-from cvejob.outputs.victims import get_victims_notation
+from cvejob.outputs.victims import get_victims_affected_notation, get_victims_fixedin_notation
+from cvejob.version import BenevolentVersion
 from cvejob.utils import (
     get_java_versions,
     get_javascript_versions,
@@ -143,8 +144,12 @@ class VersionSelector(object):
         # check if at least one version mentioned in the CVE exists
         # for given package name; if not, this is a false positive
         upstream_versions = self._get_upstream_versions(package)
+        benevolent_upstream_versions = {
+            BenevolentVersion(x) for x in upstream_versions
+        }
+        benevolent_cpe_versions = {BenevolentVersion(x) for x in cpe_versions}
 
-        upstream_match = set(cpe_versions) & set(upstream_versions)
+        upstream_match = benevolent_cpe_versions & benevolent_upstream_versions
         version_repl = {
             ver: repl
             for ver, repl in zip(upstream_match, upstream_match)
@@ -228,7 +233,9 @@ class VersionSelector(object):
 
             subset = list(filter(
                 # use negative filtering
-                lambda _v: eval("_v {} '{}'".format(op, up_ver)),
+                lambda _v: eval(
+                    "BenevolentVersion(_v) {} BenevolentVersion('{}')".format(op, up_ver)
+                ),
                 upstream_versions
             ))
 
