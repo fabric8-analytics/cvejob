@@ -162,7 +162,10 @@ def get_victims_affected_notation(affected_versions,
                 # exact version
                 version_range_str = "=={}".format(*affected_range)
         else:
-            version_range_str = "<={high},{low}".format(high=hi, low=lo)
+            if lo == v_min:
+                version_range_str = "<={high}".format(high=hi)
+            else:
+                version_range_str = "<={high},{low}".format(high=hi, low=lo)
 
         affected_version_range.append(version_range_str)
 
