@@ -1,7 +1,6 @@
 """This module contains output writer which produces CVE record in VictimsDB notation."""
 
 import os
-import re
 
 from nvdlib import utils
 from nvdlib.model import Document
