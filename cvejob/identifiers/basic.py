@@ -82,10 +82,14 @@ class NaivePackageNameIdentifier(object):
         desc_candidates = self._get_candidates_from_description()
 
         ecosystem = Config.ecosystem
-        if ecosystem == 'java':
-            vendor = [x[0] for x in vp_pairs] + list(desc_candidates)
-        else:
-            vendor = [ecosystem]
-        product = [x[1] for x in vp_pairs] + list(desc_candidates)
+        results = []
+        for vp_pair in vp_pairs:
+            if ecosystem == 'java':
+                vendor = [vp_pair[0]] + list(desc_candidates)
+            else:
+                vendor = [ecosystem]
+            product = [vp_pair[1]] + list(desc_candidates)
 
-        return utils.run_cpe2pkg(vendor, product)
+            results.extend(utils.run_cpe2pkg(vendor, product))
+
+        return results
