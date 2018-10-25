@@ -12,8 +12,3 @@ affected:
 {version}
       fixedin:
 {fixedin}
-
-
-# ---
-# Candidate scores:
-{candidate_scores}
