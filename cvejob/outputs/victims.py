@@ -105,20 +105,26 @@ class VictimsYamlOutput(object):
                 references=self.format_list(*refs),
                 groupId=gid,
                 artifactId=aid,
-                version=self.format_list(*self._affected_versions, indent=2),
-                fixedin=self.format_list(*self._safe_versions, indent=2)
+                version=self.format_list(*self._affected_versions, indent=2, quote=True),
+                fixedin=self.format_list(*self._safe_versions, indent=2, quote=True)
             )
 
             f.write(data)
 
     @staticmethod
-    def format_list(*args, indent=1, comment=False) -> str:
+    def format_list(*args, indent=1, comment=False, quote=False) -> str:
         """Format list to yaml ouptut."""
         indent = ' ' * (indent * 4)
         comment = "# " if comment else ""
 
+        arg_template = '{arg}'
+        if quote:
+            arg_template = '"' + arg_template + '"'
+
+        line_template = '{comment}{indent}- ' + arg_template
+
         formated_list = [
-            "{comment}{indent}- {arg}".format(
+            line_template.format(
                 comment=comment,
                 indent=indent,
                 arg=arg
