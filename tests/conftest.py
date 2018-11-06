@@ -16,6 +16,14 @@ def javascript_cve():
 
 
 @pytest.fixture
+def rejected_cve():
+    """Rejected CVE fixture."""
+    with open('tests/data/rejected-nvdcve.json') as f:
+        data, = json.load(f)['CVE_Items']
+        return Document.from_data(data)
+
+
+@pytest.fixture
 def config():
     """Config for testing based on default config."""
     def create_test_config(**kwargs):

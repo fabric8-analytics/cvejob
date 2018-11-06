@@ -147,7 +147,7 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
 
     def check(self):
         """Perform the check."""
-        refs = utils.rgetattr(self._doc, 'cve.references.data.url')
+        refs = utils.rgetattr(self._doc, 'cve.references.data.url') or []
 
         def is_github_ref(url):
             """Check whether given URL points to GitHub.
@@ -246,7 +246,9 @@ class NotUnexpectedSiteInReferencesCheck(CveCheck):
         """Perform the check."""
         current_ecosystem = Config.ecosystem
 
-        for ref in utils.rgetattr(self._doc, 'cve.references.data.url'):
+        refs = utils.rgetattr(self._doc, 'cve.references.data.url') or []
+
+        for ref in refs:
 
             ref_parsed = urlparse(ref)
             for ecosystem in self.known_sites:

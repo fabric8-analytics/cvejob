@@ -78,6 +78,17 @@ def test_not_unexpected_site_in_references_check_fail(config, javascript_cve, mo
     assert not check.check()
 
 
+def test_rejected_cve(config, rejected_cve, mocker):
+    """Test processing of rejected CVEs."""
+    mocker.patch('cvejob.filters.input.Config', config(ecosystem='javascript'))
+
+    check = NotUnexpectedSiteInReferencesCheck(rejected_cve)
+    assert check.check()
+
+    check = IsSupportedGitHubLanguageCheck(rejected_cve)
+    assert check.check()
+
+
 def test_cve_id_cve_age(config, javascript_cve, mocker):
     """Test scenario when both `cve_id` and `cve_age` options are set."""
     # cve_age='1': CVE is older, but the check should be excluded automatically
