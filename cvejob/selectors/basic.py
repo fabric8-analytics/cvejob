@@ -10,11 +10,12 @@ from nvdlib import utils
 from cvejob.config import Config
 from cvejob.outputs.victims import get_victims_affected_notation, get_victims_fixedin_notation
 from cvejob.version import BenevolentVersion
-from cvejob.utils import (
-    get_java_versions,
-    get_javascript_versions,
-    get_python_versions,
-    sort_versions
+from cvejob.utils import sort_versions
+
+from f8a_utils.versions import (
+    get_versions_for_pypi_package,
+    get_versions_for_npm_package,
+    get_versions_for_maven_package
 )
 
 
@@ -210,11 +211,11 @@ class VersionSelector(object):
     def _get_upstream_versions(package):
         """Get upstream versions for a given package and ecosystem."""
         if Config.ecosystem == 'java':
-            return get_java_versions(package)
+            return sort_versions(get_versions_for_maven_package(package))
         elif Config.ecosystem == 'python':
-            return get_python_versions(package)
+            return sort_versions(get_versions_for_pypi_package(package))
         elif Config.ecosystem == 'javascript':
-            return get_javascript_versions(package)
+            return sort_versions(get_versions_for_npm_package(package))
         else:
             raise ValueError('Unsupported ecosystem {e}'.format(e=Config.ecosystem))
 
