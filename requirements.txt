@@ -7,3 +7,4 @@ numpy
 scipy
 git+https://github.com/fabric8-analytics/nvdlib.git#egg=nvdlib
 git+https://github.com/fabric8-analytics/fabric8-analytics-nvd-toolkit.git#egg=toolkit
+git+https://github.com/fabric8-analytics/fabric8-analytics-utils.git#egg=fabric8-analytics-utils
