@@ -75,7 +75,7 @@
       "CVE_data_version" : "4.0",
       "nodes" : [ {
         "operator" : "OR",
-        "cpe" : [ {
+        "cpe_match" : [ {
           "vulnerable" : true,
           "cpe22Uri" : "cpe:/a:pdf-image_project:pdf-image:2.0.0",
           "cpe23Uri" : "cpe:2.3:a:pdf-image_project:pdf-image:2.0.0:*:*:*:*:*:*:*"
