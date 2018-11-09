@@ -32,7 +32,7 @@ class VictimsYamlOutput(object):
         self._candidates = candidates
 
         self._affected_versions = affected
-        self._safe_versions = fixedin or ['<unknown>']  # TODO
+        self._safe_versions = fixedin
 
         template_path = os.path.join(self.TEMPLATE_DIR, self._ecosystem)
 
@@ -114,23 +114,27 @@ class VictimsYamlOutput(object):
     @staticmethod
     def format_list(*args, indent=1, comment=False, quote=False) -> str:
         """Format list to yaml ouptut."""
-        indent = ' ' * (indent * 4)
+        indent_str = ' ' * (indent * 4)
         comment = "# " if comment else ""
 
         arg_template = '{arg}'
         if quote:
             arg_template = '"' + arg_template + '"'
 
-        line_template = '{comment}{indent}- ' + arg_template
+        if args:
+            line_template = '{comment}{indent}- ' + arg_template
 
-        formated_list = [
-            line_template.format(
-                comment=comment,
-                indent=indent,
-                arg=arg
-            )
-            for arg in args
-        ]
+            formated_list = [
+                line_template.format(
+                    comment=comment,
+                    indent=indent_str,
+                    arg=arg
+                )
+                for arg in args
+            ]
+        else:
+            # empty list
+            formated_list = ['{indent}[]'.format(indent=indent_str)]
 
         return "\n".join(formated_list)
 
