@@ -1,5 +1,6 @@
 cpe
 lxml
+codecov
 nltk
 requests
 beautifulsoup4
