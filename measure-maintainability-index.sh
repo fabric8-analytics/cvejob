@@ -16,7 +16,7 @@ function prepare_venv() {
 
     printf "%sOK%s\n" "${GREEN}" "${NORMAL}" >&2
 
-    ${PYTHON} -m venv "venv" && source venv/bin/activate && pip install radon >&2
+    ${PYTHON} -m venv "venv" && source venv/bin/activate && pip install radon==2.4.0 >&2
 }
 
 [ "$NOVENV" == "1" ] || prepare_venv || exit 1
