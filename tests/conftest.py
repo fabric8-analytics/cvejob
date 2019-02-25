@@ -16,9 +16,25 @@ def javascript_cve():
 
 
 @pytest.fixture
+def maven_cve():
+    """Maven CVE fixture."""
+    with open('tests/data/maven-nvdcve.json') as f:
+        data, = json.load(f)['CVE_Items']
+        return Document.from_data(data)
+
+
+@pytest.fixture
 def rejected_cve():
     """Rejected CVE fixture."""
     with open('tests/data/rejected-nvdcve.json') as f:
+        data, = json.load(f)['CVE_Items']
+        return Document.from_data(data)
+
+
+@pytest.fixture
+def unsupported_cve():
+    """Unsupported ecosystem CVE fixture."""
+    with open('tests/data/unsupported-nvdcve.json') as f:
         data, = json.load(f)['CVE_Items']
         return Document.from_data(data)
 
