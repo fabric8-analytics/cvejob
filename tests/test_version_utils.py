@@ -61,13 +61,15 @@ def test_version_operator():
     assert VersionOperator('==') is VersionOperator.EQ
     assert VersionOperator('<=') is VersionOperator.LE
     assert VersionOperator('>=') is VersionOperator.GE
+    assert VersionOperator('<') is VersionOperator.LT
+    assert VersionOperator('>') is VersionOperator.GT
 
     with pytest.raises(ValueError):
         assert VersionOperator('!=')
 
 
 def test_version_spec_le():
-    """Test VersionSpec()."""
+    """Test VersionSpec() for less-equal operator."""
     spec_1 = VersionSpec.from_str('<=2.1.1')
     assert spec_1.contains('0.0.1')
     assert spec_1.contains('2.1.1')
@@ -75,54 +77,100 @@ def test_version_spec_le():
     assert not spec_1.contains('2.1.2')
     assert not spec_1.contains('3.0.0')
 
-    assert spec_1 == spec_1
-    assert not spec_1 != spec_1
-    assert not spec_1 < spec_1
-    assert not spec_1 > spec_1
-    assert spec_1 <= spec_1
-    assert spec_1 >= spec_1
-
 
 def test_version_spec_ge():
-    """Test VersionSpec()."""
+    """Test VersionSpec() for greater-equal operator."""
     spec_2 = VersionSpec.from_str('>=1.0.0')
     assert not spec_2.contains('0.0.1')
     assert spec_2.contains('1.0.0')
+    assert spec_2.contains('1.0.1')
     assert spec_2.contains('2')
 
 
 def test_version_spec_eq():
-    """Test VersionSpec()."""
+    """Test VersionSpec() for == operator."""
     spec_3 = VersionSpec.from_str('==1.0.0')
     assert spec_3.contains('1.0.0')
     assert spec_3.contains('1')
     assert not spec_3.contains('2')
     assert not spec_3.contains('0')
 
-    assert spec_3 == spec_3
-    assert not spec_3 != spec_3
-    assert not spec_3 < spec_3
-    assert not spec_3 > spec_3
-    assert spec_3 <= spec_3
-    assert spec_3 >= spec_3
+
+def test_version_spec_lt():
+    """Test VersionSpec() for less-than operator."""
+    spec_1 = VersionSpec.from_str('<2.1.1')
+    assert spec_1.contains('0.0.1')
+    assert spec_1.contains('2.1.0')
+    assert spec_1.contains('2')
+    assert not spec_1.contains('2.1.2')
+    assert not spec_1.contains('2.1.1')
+    assert not spec_1.contains('3.0.0')
 
 
-def test_version_spec():
+def test_version_spec_gt():
+    """Test VersionSpec() for greater-than operator."""
+    spec_1 = VersionSpec.from_str('>2.1.1')
+    assert not spec_1.contains('0.0.1')
+    assert not spec_1.contains('2.1.1')
+    assert not spec_1.contains('2')
+    assert spec_1.contains('2.1.2')
+    assert spec_1.contains('3.0.0')
+    assert spec_1.contains('3')
+
+
+def test_version_spec_cmp_ge_gt():
+    """Test VersionSpec(), greater and greater-than comparison."""
+    assert VersionSpec.from_str('<=1') > VersionSpec.from_str('>=2')
+    assert VersionSpec.from_str('<=1') > VersionSpec.from_str('>2')
+    assert VersionSpec.from_str('<=1') >= VersionSpec.from_str('>=2')
+    assert VersionSpec.from_str('<=1') >= VersionSpec.from_str('>2')
+
+    assert VersionSpec.from_str('<1') > VersionSpec.from_str('>=2')
+    assert VersionSpec.from_str('<1') > VersionSpec.from_str('>2')
+    assert VersionSpec.from_str('<1') >= VersionSpec.from_str('>=2')
+    assert VersionSpec.from_str('<1') >= VersionSpec.from_str('>2')
+
+
+def test_version_spec_cmp_le_lt():
+    """Test VersionSpec(), less and less-than comparison."""
+    assert VersionSpec.from_str('>=1') < VersionSpec.from_str('<=2')
+    assert VersionSpec.from_str('>=1') < VersionSpec.from_str('<2')
+    assert VersionSpec.from_str('>=1') <= VersionSpec.from_str('<=2')
+    assert VersionSpec.from_str('>=1') <= VersionSpec.from_str('<2')
+
+    assert VersionSpec.from_str('>1') < VersionSpec.from_str('<=2')
+    assert VersionSpec.from_str('>1') < VersionSpec.from_str('<2')
+    assert VersionSpec.from_str('>1') <= VersionSpec.from_str('<=2')
+    assert VersionSpec.from_str('>1') <= VersionSpec.from_str('<2')
+
+
+def test_version_spec_cmp_misc():
     """Test VersionSpec()."""
-    spec_1 = VersionSpec.from_str('<=2.1.1')
-    spec_2 = VersionSpec.from_str('>=1.0.0')
-    spec_3 = VersionSpec.from_str('==1.0.0')
+    assert VersionSpec.from_str('==1') == VersionSpec.from_str('==2')
+    assert VersionSpec.from_str('<=1') == VersionSpec.from_str('<=2')
+    assert VersionSpec.from_str('<1') == VersionSpec.from_str('<2')
+    assert VersionSpec.from_str('>=1') == VersionSpec.from_str('>=2')
+    assert VersionSpec.from_str('>1') == VersionSpec.from_str('>2')
 
-    assert not spec_1 == spec_2
-    assert spec_1 != spec_2
-    assert not spec_1 < spec_2
-    assert spec_1 > spec_2
-    assert not spec_1 <= spec_2
-    assert spec_1 >= spec_2
+    assert not VersionSpec.from_str('==1') < VersionSpec.from_str('<=2')
+    assert not VersionSpec.from_str('==1') < VersionSpec.from_str('>=2')
+    assert not VersionSpec.from_str('==1') < VersionSpec.from_str('<2')
+    assert not VersionSpec.from_str('==1') < VersionSpec.from_str('>2')
 
-    assert str(spec_1) == '<=2.1.1'
-    assert str(spec_2) == '>=1.0.0'
-    assert str(spec_3) == '==1.0.0'
+
+def test_version_spec_from_str():
+    """Test VersionSpec.from_str()."""
+    spec_le = VersionSpec.from_str('<=2.1.1')
+    spec_ge = VersionSpec.from_str('>=1.0.0')
+    spec_eq = VersionSpec.from_str('==1.0.0')
+    spec_lt = VersionSpec.from_str('<3.0.0')
+    spec_gt = VersionSpec.from_str('>3.0.0')
+
+    assert str(spec_le) == '<=2.1.1'
+    assert str(spec_ge) == '>=1.0.0'
+    assert str(spec_eq) == '==1.0.0'
+    assert str(spec_lt) == '<3.0.0'
+    assert str(spec_gt) == '>3.0.0'
 
     with pytest.raises(ValueError):
         assert VersionSpec.from_str('--')
