@@ -64,6 +64,7 @@ def test_version_operator():
     assert VersionOperator('<') is VersionOperator.LT
     assert VersionOperator('>') is VersionOperator.GT
 
+    # test with invalid input
     with pytest.raises(ValueError):
         assert VersionOperator('!=')
 
@@ -172,6 +173,7 @@ def test_version_spec_from_str():
     assert str(spec_lt) == '<3.0.0'
     assert str(spec_gt) == '>3.0.0'
 
+    # test with invalid input
     with pytest.raises(ValueError):
         assert VersionSpec.from_str('--')
 
@@ -247,6 +249,7 @@ def test_get_affected_ranges():
     assert len(ranges) == 1
     assert str(ranges[0]) == '<=3,2'
 
+    # test with no affected versions
     ranges = get_affected_ranges(
         [
             ClassifiedVersion('1', False),
@@ -323,6 +326,7 @@ def test_get_safe_ranges():
     assert len(ranges) == 1
     assert str(ranges[0]) == '<=1,1'
 
+    # test with no safe versions
     ranges = get_safe_ranges(
         [
             ClassifiedVersion('1', True),
@@ -351,6 +355,7 @@ def test_get_upstream_versions(mocker):
     assert get_upstream_versions('pypi_pkg', 'python') == ['1', '2', '3']
     assert get_upstream_versions('npm_pkg', 'javascript') == ['1.0.0', '0.0.9', '0.0.8']
 
+    # test with invalid input
     with pytest.raises(ValueError):
         get_upstream_versions('abc', 'xyz')
 
