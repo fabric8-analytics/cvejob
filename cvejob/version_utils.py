@@ -108,12 +108,14 @@ def get_version_ranges(nodes):
 class VersionOperator(Enum):
     """Enum for version range operators.
 
-    Following operators are currently supported: '==', '<=', '>='.
+    Following operators are currently supported: '==', '<=', '>=', '<', '>'.
     """
 
     EQ = '=='
     LE = '<='
     GE = '>='
+    LT = '<'
+    GT = '>'
 
 
 class VersionSpec(object):
@@ -139,7 +141,9 @@ class VersionSpec(object):
         op_map = {
             VersionOperator.EQ: operator.eq,
             VersionOperator.LE: operator.ge,
-            VersionOperator.GE: operator.le
+            VersionOperator.GE: operator.le,
+            VersionOperator.LT: operator.gt,
+            VersionOperator.GT: operator.lt
         }
 
         op_func = op_map.get(self.operator)
@@ -154,7 +158,7 @@ class VersionSpec(object):
 
         :param version_spec: str, version specification (e.g.: '<=1.0')
         """
-        _, op, version = re.split(r"([<>=]{2})", version_spec)
+        _, op, version = re.split(r"([<>=]{1,2})", version_spec)
         return cls(version, op)
 
     def __str__(self):
@@ -166,17 +170,20 @@ class VersionSpec(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    # operators which enclose the right side of the version range are considered greater
     def __gt__(self, other):
-        return self.operator == VersionOperator.LE and other.operator != VersionOperator.LE
+        ops = (VersionOperator.LE, VersionOperator.LT)
+        return self.operator in ops and other.operator not in ops
 
     def __lt__(self, other):
-        return self.operator == VersionOperator.GE and other.operator != VersionOperator.GE
+        ops = (VersionOperator.GE, VersionOperator.GT)
+        return self.operator in ops and other.operator not in ops
 
     def __ge__(self, other):
-        return self.__eq__(other) or self.__gt__(other)
+        return self.operator == other.operator or self.__gt__(other)
 
     def __le__(self, other):
-        return self.__eq__(other) or self.__lt__(other)
+        return self.operator == other.operator or self.__lt__(other)
 
 
 class VersionRange(object):
