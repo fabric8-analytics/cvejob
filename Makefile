@@ -1,3 +1,10 @@
+DOCKERFILE := Dockerfile
+REPOSITORY := openshiftio/fabric8-analytics-cvejob
+
+REGISTRY := quay.io
+DEFAULT_TAG=latest
+
+
 .PHONY=docker-build
 
 all: prep docker-build
@@ -23,8 +30,25 @@ javascript-package-names:
 java-package-names: build-maven-packages
 	scripts/get_java_packages.sh > data/java-packages
 
+test:
+	./run-tests.sh
+
 docker-build:
-	docker build -t fabric8-analytics/cvejob .
+	docker build --no-cache -t $(REGISTRY)/$(REPOSITORY):$(DEFAULT_TAG) -f $(DOCKERFILE) .
+	@echo $(REGISTRY)/$(REPOSITORY):$(DEFAULT_TAG)
+
+fast-docker-build:
+	docker build -t $(REGISTRY)/$(REPOSITORY):$(DEFAULT_TAG) -f $(DOCKERFILE) .
+	@echo $(REGISTRY)/$(REPOSITORY):$(DEFAULT_TAG)
+
+get-image-name:
+	@echo $(REGISTRY)/$(REPOSITORY):$(DEFAULT_TAG)
+
+get-image-repository:
+	@echo $(REPOSITORY)
+
+get-push-registry:
+	@echo $(REGISTRY)
 
 clean:
 	-rm -rf database/ .external/ data/*-packages tools/bin/*.jar
