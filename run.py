@@ -11,9 +11,11 @@ from nvdlib.query_selectors import in_range
 
 from cvejob.filters.input import validate_cve
 from cvejob.config import Config
-from cvejob.identifiers import get_identifier
+from cvejob.identifiers import get_identifier_cls
+from cvejob.cpe2pkg import get_pkgfile_path
 from cvejob.selectors.basic import VersionSelector
 from cvejob.outputs.victims import VictimsYamlOutput
+from cvejob.versions import NVDVersions
 from cvejob.utils import parse_date_range
 
 import logging
@@ -173,7 +175,8 @@ def run():
                     ))
                 continue
 
-            identifier = get_identifier(doc)
+            pkgfile_path = get_pkgfile_path(Config.pkgfile_dir, Config.ecosystem)
+            identifier = get_identifier_cls()(doc, Config.ecosystem, pkgfile_path)
             candidates = identifier.identify()
 
             if not candidates:
@@ -183,8 +186,8 @@ def run():
                     ))
                 continue
 
-            selector = VersionSelector(doc, candidates)
-            winner, affected, safe = selector.pick_winner()
+            selector = VersionSelector(doc, candidates, Config.ecosystem)
+            winner = selector.pick_winner()
 
             if not winner:
                 logger.info(
@@ -193,6 +196,8 @@ def run():
                     ))
 
                 continue
+
+            affected, safe = NVDVersions(doc, winner.package, Config.ecosystem).run()
 
             victims_output = VictimsYamlOutput(
                 ecosystem=Config.ecosystem,

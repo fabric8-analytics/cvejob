@@ -6,6 +6,7 @@ from nvdlib import utils
 from nvdlib.model import Document
 
 from cvejob.config import Config
+from cvejob.cpe2pkg import PackageNameCandidate
 
 
 class VictimsYamlOutput(object):
@@ -19,7 +20,7 @@ class VictimsYamlOutput(object):
     def __init__(self,
                  ecosystem: str,
                  cve_doc: Document,
-                 winner: dict,
+                 winner: PackageNameCandidate,
                  candidates: list,
                  affected: list,
                  fixedin: list):
@@ -85,13 +86,13 @@ class VictimsYamlOutput(object):
             candidate_scores = []
             for result in self._candidates:
                 score_str = "{package}: {score}".format(
-                    package=result['package'],
-                    score=result['score']
+                    package=result.package,
+                    score=result.score
                 )
                 candidate_scores.append(score_str)
 
             if self._ecosystem == 'java':
-                gid, aid = self._winner['package'].split(':')
+                gid, aid = self._winner.package.split(':')
             else:
                 gid, aid = None, None
 
@@ -99,7 +100,7 @@ class VictimsYamlOutput(object):
 
             data = self._template.format(
                 cve=self._cve_id,
-                name=self._winner['package'],
+                name=self._winner.package,
                 cvss_v2=cvss_score,
                 description=description,
                 references=self.format_list(*refs),
@@ -137,90 +138,3 @@ class VictimsYamlOutput(object):
             formated_list = ['{indent}[]'.format(indent=indent_str)]
 
         return "\n".join(formated_list)
-
-
-def get_victims_affected_notation(affected_versions,
-                                  v_min,
-                                  v_max) -> list:
-    """Output victims notation for list of affected versions.
-
-    For more information about the format: https://github.com/victims/victims-cve-db
-    """
-    affected_version_range = list()
-
-    for affected_range in affected_versions:
-
-        if not affected_range:
-            continue
-
-        lo, hi = affected_range[0], affected_range[-1]
-
-        if len(affected_range) == 1:
-            if hi == v_max:
-                # not fixed yet
-                version_range_str = ">=" + lo
-
-            elif lo == v_min:
-                # not fixed yet
-                version_range_str = "<=" + hi
-
-            else:
-                # exact version
-                version_range_str = "=={}".format(*affected_range)
-        else:
-            if lo == v_min:
-                version_range_str = "<={high}".format(high=hi)
-            else:
-                version_range_str = "<={high},{low}".format(high=hi, low=lo)
-
-        affected_version_range.append(version_range_str)
-
-    return affected_version_range
-
-
-def get_victims_fixedin_notation(safe_versions,
-                                 v_min,
-                                 v_max) -> list:
-    """Output victims notation for a list of safe versions.
-
-    For more information about the format: https://github.com/victims/victims-cve-db
-    """
-    fixedin_version_range = list()
-
-    for safe_range in safe_versions:
-
-        if not safe_range:
-            continue
-
-        lo, hi = safe_range[0], safe_range[-1]
-
-        if hi == v_max:
-            # fixed from the lowest version onwards
-            version_range_str = ">=" + lo
-
-        elif lo == v_min:
-            # safe versions, but these were never vulnerable
-            # TODO: do we really want to skip them?
-            continue
-        elif len(safe_range) == 1:
-            # exact version
-            version_range_str = "=={}".format(*safe_range)
-        else:
-            version_range_str = "<={high},{low}".format(high=hi, low=lo)
-
-        fixedin_version_range.append(version_range_str)
-
-    return fixedin_version_range
-
-
-def reverse_version_string(version_string: str):
-    """Reverse version string."""
-    v_string = version_string
-
-    if version_string.startswith('<'):
-        v_string = '>' + version_string[1:]
-
-    elif version_string.startswith('>'):
-        v_string = '<' + version_string[1:]
-
-    return v_string

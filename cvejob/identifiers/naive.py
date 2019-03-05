@@ -9,6 +9,9 @@ from collections import OrderedDict
 
 from cvejob.config import Config
 from cvejob import utils
+from cvejob.cpe2pkg import (
+    run_cpe2pkg, PackageNameCandidate, build_cpe2pkg_query
+)
 
 
 class NaivePackageNameIdentifier(object):
@@ -18,14 +21,20 @@ class NaivePackageNameIdentifier(object):
     are considered to be possible package names (minus stop words).
     """
 
-    def __init__(self, doc):
+    def __init__(self, doc, ecosystem, pkgfile_path, cpe2pkg_path=Config.cpe2pkg_path):
         """Constructor."""
-        self._doc = doc
+        self.doc = doc
+        self.ecosystem = ecosystem
+        self.pkgfile_path = pkgfile_path
+        self.cpe2pkg_path = cpe2pkg_path
 
     def _get_vendor_product_pairs(self):
+        """Get (vendor, product) pairs from the CVE.
 
+        :return: a set containing (vendor, product) pairs
+        """
         result = set()
-        for cpe in utils.get_cpe(self._doc, cpe_type='application'):
+        for cpe in utils.get_cpe(self.doc, cpe_type='application'):
 
             vendor = cpe.get_vendor()[0]
             product = cpe.get_product()[0]
@@ -39,7 +48,7 @@ class NaivePackageNameIdentifier(object):
         pkg_name_candidates = set()
 
         sentences = sent_tokenize(
-            utils.get_description_by_lang(self._doc)
+            utils.get_description_by_lang(self.doc)
         )
 
         first_sentence = sentences[0] if sentences else ''
@@ -81,15 +90,28 @@ class NaivePackageNameIdentifier(object):
         vp_pairs = self._get_vendor_product_pairs()
         desc_candidates = self._get_candidates_from_description()
 
-        ecosystem = Config.ecosystem
         results = []
         for vp_pair in vp_pairs:
-            if ecosystem == 'java':
-                vendor = [vp_pair[0]] + list(desc_candidates)
+            if self.ecosystem == 'java':
+                # in java, vendor could help us to narrow down the groupId
+                vendor = [*vp_pair] + list(desc_candidates)
             else:
-                vendor = [ecosystem]
+                vendor = [self.ecosystem]
             product = [vp_pair[1]] + list(desc_candidates)
 
-            results.extend(utils.run_cpe2pkg(vendor, product))
+            results.extend(self._run_cpe2pkg(vendor, product))
 
         return results
+
+    def _run_cpe2pkg(self, vendor, product):
+        """Run cpe2pkg tool.
+
+        :param vendor: list[str], a list of vendor strings
+        :param product: list[str], a list of product strings
+        :return: list[PackageNameCandidate], a list of package name candidates
+        """
+        query_str = build_cpe2pkg_query(vendor, product)
+        output = run_cpe2pkg(query_str, self.pkgfile_path, self.cpe2pkg_path)
+        return [
+            PackageNameCandidate.from_cpe2pkg_output(x, self.ecosystem) for x in output if x
+        ]

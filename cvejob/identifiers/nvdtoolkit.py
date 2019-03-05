@@ -4,9 +4,9 @@ from toolkit import pipelines
 from toolkit.transformers.classifiers import NBClassifier
 from toolkit.transformers import feature_hooks
 
-from cvejob.identifiers.basic import NaivePackageNameIdentifier
+from cvejob.identifiers.naive import NaivePackageNameIdentifier
 from cvejob.config import Config
-from cvejob.utils import run_cpe2pkg
+from cvejob.cpe2pkg import run_cpe2pkg
 
 
 class NvdToolkitPackageNameIdentifier(NaivePackageNameIdentifier):
@@ -30,7 +30,7 @@ class NvdToolkitPackageNameIdentifier(NaivePackageNameIdentifier):
         )
 
         results = pipeline.fit_predict(
-            [self._doc.description], classifier__sample=True
+            [self.doc.description], classifier__sample=True
         ).tolist()[0]
 
         candidates = [x[0][0] for x in results]
