@@ -11,3 +11,4 @@ venv/
 nvd-data/
 html/
 latex/
+coverage.xml
