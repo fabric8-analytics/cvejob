@@ -1,0 +1,122 @@
+{
+  "CVE_data_type" : "CVE",
+  "CVE_data_format" : "MITRE",
+  "CVE_data_version" : "4.0",
+  "CVE_data_numberOfCVEs" : "792",
+  "CVE_data_timestamp" : "2019-02-18T08:00Z",
+  "CVE_Items" : [ {
+    "cve" : {
+      "data_type" : "CVE",
+      "data_format" : "MITRE",
+      "data_version" : "4.0",
+      "CVE_data_meta" : {
+        "ID" : "CVE-2019-6446",
+        "ASSIGNER" : "cve@mitre.org"
+      },
+      "affects" : {
+        "vendor" : {
+          "vendor_data" : [ {
+            "vendor_name" : "numpy",
+            "product" : {
+              "product_data" : [ {
+                "product_name" : "numpy",
+                "version" : {
+                  "version_data" : [ {
+                    "version_value" : "1.16.0",
+                    "version_affected" : "<="
+                  } ]
+                }
+              } ]
+            }
+          } ]
+        }
+      },
+      "problemtype" : {
+        "problemtype_data" : [ {
+          "description" : [ {
+            "lang" : "en",
+            "value" : "CWE-502"
+          } ]
+        } ]
+      },
+      "references" : {
+        "reference_data" : [ {
+          "url" : "http://www.securityfocus.com/bid/106670",
+          "name" : "106670",
+          "refsource" : "BID",
+          "tags" : [ ]
+        }, {
+          "url" : "https://bugzilla.suse.com/show_bug.cgi?id=1122208",
+          "name" : "https://bugzilla.suse.com/show_bug.cgi?id=1122208",
+          "refsource" : "MISC",
+          "tags" : [ "Exploit", "Issue Tracking", "Third Party Advisory" ]
+        }, {
+          "url" : "https://github.com/numpy/numpy/issues/12759",
+          "name" : "https://github.com/numpy/numpy/issues/12759",
+          "refsource" : "MISC",
+          "tags" : [ "Exploit", "Issue Tracking", "Third Party Advisory" ]
+        } ]
+      },
+      "description" : {
+        "description_data" : [ {
+          "lang" : "en",
+          "value" : "An issue was discovered in NumPy 1.16.0 and earlier. It uses the pickle Python module unsafely, which allows remote attackers to execute arbitrary code via a crafted serialized object, as demonstrated by a numpy.load call."
+        } ]
+      }
+    },
+    "configurations" : {
+      "CVE_data_version" : "4.0",
+      "nodes" : [ {
+        "operator" : "OR",
+        "cpe_match" : [ {
+          "vulnerable" : true,
+          "cpe23Uri" : "cpe:2.3:a:numpy:numpy:*:*:*:*:*:*:*:*",
+          "versionEndIncluding" : "1.16.0"
+        } ]
+      } ]
+    },
+    "impact" : {
+      "baseMetricV3" : {
+        "cvssV3" : {
+          "version" : "3.0",
+          "vectorString" : "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+          "attackVector" : "NETWORK",
+          "attackComplexity" : "LOW",
+          "privilegesRequired" : "NONE",
+          "userInteraction" : "NONE",
+          "scope" : "UNCHANGED",
+          "confidentialityImpact" : "HIGH",
+          "integrityImpact" : "HIGH",
+          "availabilityImpact" : "HIGH",
+          "baseScore" : 9.8,
+          "baseSeverity" : "CRITICAL"
+        },
+        "exploitabilityScore" : 3.9,
+        "impactScore" : 5.9
+      },
+      "baseMetricV2" : {
+        "cvssV2" : {
+          "version" : "2.0",
+          "vectorString" : "AV:N/AC:L/Au:N/C:P/I:P/A:P",
+          "accessVector" : "NETWORK",
+          "accessComplexity" : "LOW",
+          "authentication" : "NONE",
+          "confidentialityImpact" : "PARTIAL",
+          "integrityImpact" : "PARTIAL",
+          "availabilityImpact" : "PARTIAL",
+          "baseScore" : 7.5
+        },
+        "severity" : "HIGH",
+        "exploitabilityScore" : 10.0,
+        "impactScore" : 6.4,
+        "acInsufInfo" : false,
+        "obtainAllPrivilege" : false,
+        "obtainUserPrivilege" : false,
+        "obtainOtherPrivilege" : false,
+        "userInteractionRequired" : false
+      }
+    },
+    "publishedDate" : "2019-01-16T05:29Z",
+    "lastModifiedDate" : "2019-01-23T11:29Z"
+  } ]
+}

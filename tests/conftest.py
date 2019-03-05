@@ -2,6 +2,7 @@
 
 import pytest
 import json
+from pathlib import Path
 from nvdlib.model import Document
 
 from cvejob.config import DefaultConfig
@@ -24,6 +25,22 @@ def maven_cve():
 
 
 @pytest.fixture
+def python_cve():
+    """Maven CVE fixture."""
+    with open('tests/data/python-nvdcve.json') as f:
+        data, = json.load(f)['CVE_Items']
+        return Document.from_data(data)
+
+
+@pytest.fixture
+def maven_vertx_cve():
+    """Maven Vert.x CVE fixture."""
+    with open('tests/data/maven-vertx-nvdcve.json') as f:
+        data, = json.load(f)['CVE_Items']
+        return Document.from_data(data)
+
+
+@pytest.fixture
 def rejected_cve():
     """Rejected CVE fixture."""
     with open('tests/data/rejected-nvdcve.json') as f:
@@ -37,6 +54,16 @@ def unsupported_cve():
     with open('tests/data/unsupported-nvdcve.json') as f:
         data, = json.load(f)['CVE_Items']
         return Document.from_data(data)
+
+
+@pytest.fixture
+def cpe2pkg_tool():
+    """Unsupported ecosystem CVE fixture."""
+    bin = Path(__file__).parent.parent / Path('tools/bin/cpe2pkg.jar')
+    if bin.exists():
+        return str(bin)
+    else:
+        raise RuntimeError('`cpe2pkg.jar` is not available, please run `make build-cpe2pkg once.`')
 
 
 @pytest.fixture
