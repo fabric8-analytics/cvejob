@@ -12,3 +12,4 @@ nvd-data/*/
 html/
 latex/
 coverage.xml
+cvedb/
