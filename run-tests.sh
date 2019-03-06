@@ -20,15 +20,14 @@ YELLOW=$(tput bold && tput setaf 3)
 function find_python() {
     # we want tests to run on python3.6
     printf 'checking alias `python3.6` ... ' >&2
-    PYTHON=$(which python3.6 2> /dev/null)
-    if [ "$?" -ne "0" ]; then
-        printf "%sNOT FOUND%s\n" "${YELLOW}" "${NORMAL}" >&2
+    PYTHON=$(which python3.6 2> /dev/null) || :
+    if [ -z "$PYTHON" ]; then
+        printf "%s\"python3.6\" NOT FOUND%s\n" "${YELLOW}" "${NORMAL}" >&2
 
         printf 'checking alias `python3` ... ' >&2
-        PYTHON=$(which python3 2> /dev/null)
+        PYTHON=$(which python3 2> /dev/null) || :
 
-        let ec=$?
-        [ "$ec" -ne "0" ] && printf "${RED} NOT FOUND ${NORMAL}\n" && return $ec
+        [ -z "$PYTHON" ] && printf "${RED} \"python3\" NOT FOUND ${NORMAL}\n" && return 1
     fi
 
     printf "%sOK%s\n" "${GREEN}" "${NORMAL}" >&2
