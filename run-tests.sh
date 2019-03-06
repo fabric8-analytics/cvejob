@@ -5,7 +5,7 @@ set -x
 
 COVERAGE_THRESHOLD=40
 
-TERM=${TERM:-xterm}
+export TERM=${TERM:-xterm}
 
 # set up terminal colors
 NORMAL=$(tput sgr0)
