@@ -46,7 +46,7 @@ class PackageNameCandidate(object):
         :param output_line: str, single line of the cpe2pkg output
         :param ecosystem: str, ecosystem name
         """
-        score_str, package = output_line.split()
+        score_str, package, *_ = output_line.split()
         score = Decimal(score_str)
 
         # ecosystems other than "java" don't have group IDs
