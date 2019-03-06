@@ -35,7 +35,9 @@ def test_package_name_candidate_bad():
         PackageNameCandidate('package-a', None)
 
     # extra element ("UI") in the cpe2pkg output line
-    candidate = PackageNameCandidate.from_cpe2pkg_output('1.0268737 javascript:JQuery UI', 'javascript')
+    candidate = PackageNameCandidate.from_cpe2pkg_output(
+        '1.0268737 javascript:JQuery UI', 'javascript'
+    )
     assert candidate.package == 'JQuery'
 
 
