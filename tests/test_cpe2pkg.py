@@ -24,13 +24,19 @@ def test_package_name_candidate():
     c3 = PackageNameCandidate.from_cpe2pkg_output('9.0 gid:package-c', 'java')
     assert c3.package == 'gid:package-c'
 
-    # with invalid input
+
+def test_package_name_candidate_bad():
+    """Test PackageNameCandidate() with invalid input."""
     with pytest.raises(ValueError):
         PackageNameCandidate(None, Decimal('1.0'))
     with pytest.raises(ValueError):
         PackageNameCandidate('', Decimal('1.0'))
     with pytest.raises(ValueError):
         PackageNameCandidate('package-a', None)
+
+    # extra element ("UI") in the cpe2pkg output line
+    candidate = PackageNameCandidate.from_cpe2pkg_output('1.0268737 javascript:JQuery UI', 'javascript')
+    assert candidate.package == 'JQuery'
 
 
 @pytest.mark.parametrize('pkgfile_dir,ecosystem,expected', [
