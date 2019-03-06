@@ -65,7 +65,7 @@ class VersionSelector(object):
 
         for version_range in version_ranges:
             for rng in version_range:
-                for version in rng:
+                for version in rng or []:  # rng could be None
                     versions.add(VersionSpec.from_str(version).version)
 
         return list(versions)

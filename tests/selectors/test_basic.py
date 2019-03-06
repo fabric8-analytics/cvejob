@@ -15,3 +15,13 @@ def test_basic_selector(maven_vertx_cve):
     winner = selector.pick_winner()
     assert winner
     assert winner.package == 'io.vertx:vertx-core'
+
+
+def test_basic_selector_none_versions(unsupported_cve_none_versions):
+    """Test VersionSelector().pick_winner() with "None" versions."""
+    candidates = [
+        PackageNameCandidate('io.vertx:testtools', Decimal('10.0')),
+    ]
+    selector = VersionSelector(unsupported_cve_none_versions, candidates, 'java')
+    winner = selector.pick_winner()  # don't throw TypeError here
+    assert not winner

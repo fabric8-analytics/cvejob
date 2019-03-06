@@ -57,6 +57,17 @@ def unsupported_cve():
 
 
 @pytest.fixture
+def unsupported_cve_none_versions():
+    """Unsupported ecosystem CVE fixture.
+
+    Some of the CVE versions in this CVE are "None".
+    """
+    with open('tests/data/unsupported-nvdcve-2.json') as f:
+        data, = json.load(f)['CVE_Items']
+        return Document.from_data(data)
+
+
+@pytest.fixture
 def cpe2pkg_tool():
     """Unsupported ecosystem CVE fixture."""
     bin = Path(__file__).parent.parent / Path('tools/bin/cpe2pkg.jar')
