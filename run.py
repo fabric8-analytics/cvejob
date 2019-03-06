@@ -124,21 +124,8 @@ def run():
 
         if cherrypicked_cve_id:
             feed_names = [cherrypicked_year]
-
-        else:  # load all feeds in the feed_dir
-            feed_names = [
-                f_name for f_name in os.listdir(feed_dir)
-                if re.fullmatch(FEED_NAME_PATTERN, f_name, re.IGNORECASE)
-            ]
-
-        if not feed_names:  # if there are still no feed present -> default feed
-            logger.info(
-                ("No feeds have been selected or found in {f_dir}.\n"
-                 "Default feed will be fetched: {default_feed}"
-                 ).format(
-                    f_dir=feed_dir,
-                    default_dir=FeedManager.DEFAULT_FEED_NAME
-                ))
+        else:
+            feed_names = ['modified']
 
     with FeedManager(n_workers=multiprocessing.cpu_count()) as feed_manager:
 
