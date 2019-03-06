@@ -3,7 +3,7 @@
 set -e
 set -x
 
-COVERAGE_THRESHOLD=40
+COVERAGE_THRESHOLD=80
 
 export TERM=${TERM:-xterm}
 if [ "$TERM" = "dumb" ]; then
