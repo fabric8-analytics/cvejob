@@ -47,7 +47,7 @@ def get_cpe(doc, cpe_type: str = None) -> list:
 
     else:
         cpe_list = [
-            CPE(cpe_str) for cpe_str in it.chain(*cpe_str_list)
+            CPE(cpe_str) for cpe_str in it.chain(*[x for x in cpe_str_list if x is not None])
         ]
 
         if type_to_check:
