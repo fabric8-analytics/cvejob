@@ -6,6 +6,10 @@ set -x
 COVERAGE_THRESHOLD=40
 
 export TERM=${TERM:-xterm}
+if [ "$TERM" = "dumb" ]; then
+    # likely running in CI, just force "xterm"
+    export TERM=xterm
+fi
 
 # set up terminal colors
 NORMAL=$(tput sgr0)
