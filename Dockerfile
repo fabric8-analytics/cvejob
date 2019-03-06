@@ -4,7 +4,10 @@ ENV PREP_DIR=/prep
 ENV CVEJOB_CPE2PKG_PATH=/prep/tools/bin/cpe2pkg.jar
 ENV CVEJOB_JAVA_PACKAGES_JAR=/prep/tools/bin/maven-packages.jar
 ENV CVEJOB_PKGFILE_DIR=/prep/data
-
+ENV GIT_COMMITTER_NAME=Bishop
+ENV GIT_COMMITTER_EMAIL=fabric8.analytics.cve.bot@gmail.com
+ENV GIT_AUTHOR_NAME=Bishop
+ENV GIT_AUTHOR_EMAIL=fabric8.analytics.cve.bot@gmail.com
 
 RUN yum install -y epel-release https://centos7.iuscommunity.org/ius-release.rpm &&\
     yum install -y python36u python36u-devel python36u-pip java-1.8.0-openjdk-headless gcc git which npm make maven &&\
@@ -31,6 +34,9 @@ RUN make prep
 COPY ./ /cvejob/
 
 WORKDIR /cvejob
+
+# cvejob needs to be able to create directories in workdir
+RUN chmod -R 777 .
 
 RUN python3.6 -m pip install -r requirements.txt
 
