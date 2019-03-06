@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: f8a-cvejob
+metadata:
+  name: f8a-cvejob
+  annotations:
+    description: f8a-cvejob
+objects:
+- apiVersion:  batch/v1beta1
+  kind: CronJob
+  metadata:
+    name: f8a-cvejob-${CVEJOB_ECOSYSTEM}
+    annotations:
+      description: f8a-cvejob-${CVEJOB_ECOSYSTEM}
+  spec:
+    successfulJobsHistoryLimit: 4
+    failedJobsHistoryLimit: 0
+    concurrencyPolicy: "Forbid"
+    schedule: "${CRON_SCHEDULE}"
+    jobTemplate:
+      spec:
+        template:
+          spec:
+            restartPolicy: Never
+            containers:
+            - name: f8a-cvejob-${CVEJOB_ECOSYSTEM}
+              image: "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
+              env:
+                - name: CVEJOB_ECOSYSTEM
+                  value: "${CVEJOB_ECOSYSTEM}"
+                - name: CVEJOB_CVE_AGE
+                  value: "${CVEJOB_CVE_AGE}"
+                - name: CVEJOB_SKIP_PULL_REQUESTS
+                  value: "${CVEJOB_SKIP_PULL_REQUESTS}"
+                - name: GITHUB_TOKEN
+                  value: "${GITHUB_TOKEN}"
+                  valueFrom:
+                    secretKeyRef:
+                      name: cvejob
+                      key: github_token
+              resources:
+                requests:
+                  memory: ${MEMORY_REQUEST}
+                  cpu: ${CPU_REQUEST}
+                limits:
+                  memory: ${MEMORY_LIMIT}
+                  cpu: ${CPU_LIMIT}
+parameters:
+- description: Docker registry
+  displayName: Docker registry
+  required: true
+  name: DOCKER_REGISTRY
+  value: "quay.io"
+
+- description: Docker image
+  displayName: Docker image
+  required: true
+  name: DOCKER_IMAGE
+  value: "openshiftio/fabric8-analytics-cvejob"
+
+- description: Image tag
+  displayName: Image tag
+  required: true
+  name: IMAGE_TAG
+  value: "latest"
+
+- description: Ecosystem name
+  displayName: Ecosystem name
+  required: true
+  name: CVEJOB_ECOSYSTEM
+  value: "python"
+
+- description: Skip CVEs older than CVE age
+  displayName: CVE age
+  required: true
+  name: CVEJOB_CVE_AGE
+  value: "1"
+
+- description: Skip opening pull requests
+  displayName: Skip pull requests
+  required: true
+  name: CVEJOB_SKIP_PULL_REQUESTS
+  value: "false"
+
+- description: Schedule
+  displayName: Schedule
+  required: true
+  name: CRON_SCHEDULE
+  value: "0 1 * * *"
+
+- description: CPU request
+  displayName: CPU request
+  required: true
+  name: CPU_REQUEST
+  value: "250m"
+
+- description: CPU limit
+  displayName: CPU limit
+  required: true
+  name: CPU_LIMIT
+  value: "500m"
+
+- description: Memory request
+  displayName: Memory request
+  required: true
+  name: MEMORY_REQUEST
+  value: "256Mi"
+
+- description: Memory limit
+  displayName: Memory limit
+  required: true
+  name: MEMORY_LIMIT
+  value: "2048Mi"
+
