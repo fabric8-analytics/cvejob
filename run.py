@@ -130,7 +130,7 @@ def run():
     with FeedManager(n_workers=multiprocessing.cpu_count()) as feed_manager:
 
         feeds = feed_manager.fetch_feeds(
-            feed_names=feed_names, data_dir=feed_dir
+            feed_names=feed_names, data_dir=feed_dir, update=True
         )
         collection = feed_manager.collect(feeds)
         collection = _filter_collection(collection,
