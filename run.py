@@ -1,8 +1,5 @@
 """Run CVEjob."""
 
-import os
-import re
-
 import multiprocessing
 
 import nvdlib
