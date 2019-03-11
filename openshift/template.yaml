@@ -33,6 +33,8 @@ objects:
                   value: "${CVEJOB_CVE_AGE}"
                 - name: CVEJOB_SKIP_PULL_REQUESTS
                   value: "${CVEJOB_SKIP_PULL_REQUESTS}"
+                - name: XDG_DATA_HOME
+                  value: "/cvejob"
                 - name: GITHUB_TOKEN
                   value: "${GITHUB_TOKEN}"
                   valueFrom:
