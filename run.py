@@ -1,5 +1,7 @@
 """Run CVEjob."""
 
+import sys
+from decimal import Decimal
 import multiprocessing
 
 import nvdlib
@@ -9,7 +11,7 @@ from nvdlib.query_selectors import in_range
 from cvejob.filters.input import validate_cve
 from cvejob.config import Config
 from cvejob.identifiers import get_identifier_cls
-from cvejob.cpe2pkg import get_pkgfile_path
+from cvejob.cpe2pkg import get_pkgfile_path, PackageNameCandidate
 from cvejob.selectors.basic import VersionSelector
 from cvejob.outputs.victims import VictimsYamlOutput
 from cvejob.versions import NVDVersions
@@ -145,6 +147,22 @@ def run():
     logger.debug("Number of CVE Documents in the collection: {}".format(
         collection.count()
     ))
+
+    if Config.package_name and Config.cve_id:
+        # user knows the package name, so we don't have to guess ;)
+        doc = [x for x in collection][0]  # Collection doesn't support indexing
+        affected, safe = NVDVersions(doc, Config.package_name, Config.ecosystem).run()
+        victims_output = VictimsYamlOutput(
+            ecosystem=Config.ecosystem,
+            cve_doc=doc,
+            winner=PackageNameCandidate(Config.package_name, Decimal('1.0')),
+            candidates=[],
+            affected=affected,
+            fixedin=safe
+        )
+        _log_results(victims_output)
+        victims_output.write()
+        sys.exit(0)
 
     for doc in collection:
 
