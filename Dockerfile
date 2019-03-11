@@ -8,12 +8,13 @@ ENV GIT_COMMITTER_NAME=Bishop
 ENV GIT_COMMITTER_EMAIL=fabric8.analytics.cve.bot@gmail.com
 ENV GIT_AUTHOR_NAME=Bishop
 ENV GIT_AUTHOR_EMAIL=fabric8.analytics.cve.bot@gmail.com
+ENV NLTK_DATA=/nltk_data
 
 RUN yum install -y epel-release https://centos7.iuscommunity.org/ius-release.rpm &&\
     yum install -y python36u python36u-devel python36u-pip java-1.8.0-openjdk-headless gcc git which npm make maven &&\
     yum clean all
 
-RUN mkdir -p ${PREP_DIR}/data
+RUN mkdir -p ${PREP_DIR}/data ${NLTK_DATA}
 
 WORKDIR ${PREP_DIR}
 
@@ -27,6 +28,8 @@ RUN python3.6 -m pip install -r /tmp/requirements.txt
 RUN python3.6 -c "import nltk; nltk.download('words')"
 RUN python3.6 -c "import nltk; nltk.download('punkt')"
 RUN python3.6 -c "import nltk; nltk.download('stopwords')"
+
+RUN chmod 755 ${NLTK_DATA}
 
 # This will take a while. Sit back and relax.
 RUN make prep
