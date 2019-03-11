@@ -25,6 +25,9 @@ class DefaultConfig(object):
     # ID of a CVE to process, all other CVEs will be ignored
     cve_id = None
 
+    # package name, requires also cve_id to be set
+    package_name = None
+
     # location of the cpe2pkg Jar file
     cpe2pkg_path = 'cpe2pkg.jar'
 
@@ -68,6 +71,10 @@ class RuntimeConfig(object):
         cve_id = os.environ.get('CVEJOB_CVE_ID')
         if cve_id is not None:
             self._config.cve_id = cve_id
+
+        package_name = os.environ.get('CVEJOB_PACKAGE_NAME')
+        if package_name is not None:
+            self._config.package_name = package_name
 
         cpe2pkg_path = os.environ.get('CVEJOB_CPE2PKG_PATH')
         if cpe2pkg_path is not None:
