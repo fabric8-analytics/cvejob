@@ -36,7 +36,6 @@ objects:
                 - name: XDG_DATA_HOME
                   value: "/cvejob"
                 - name: GITHUB_TOKEN
-                  value: "${GITHUB_TOKEN}"
                   valueFrom:
                     secretKeyRef:
                       name: cvejob
