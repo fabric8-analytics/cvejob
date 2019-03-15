@@ -38,8 +38,11 @@ git clone ${cvedb_git_url} cvedb || (
     git checkout master &&\
     git reset --hard origin/master &&\
     git clean -f -d &&\
-    git pull &&\
-    git remote set-url --push origin https://${GITHUB_TOKEN}@github.com/fabric8-analytics/cvedb.git
+    git pull
+)
+
+(
+    cd ${cvedb} && git remote set-url --push origin https://${GITHUB_TOKEN}@github.com/fabric8-analytics/cvedb.git
 )
 
 # copy data from the cvejob-local database to the upstream database
