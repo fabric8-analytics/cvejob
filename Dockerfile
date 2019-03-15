@@ -43,4 +43,4 @@ RUN chmod -R 777 .
 
 RUN python3.6 -m pip install -r requirements.txt
 
-CMD ["cronjob-run.sh"]
+CMD ["/cvejob/cronjob-run.sh"]
