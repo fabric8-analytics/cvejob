@@ -100,7 +100,7 @@ parameters:
   displayName: CPU limit
   required: true
   name: CPU_LIMIT
-  value: "500m"
+  value: "1000m"
 
 - description: Memory request
   displayName: Memory request
