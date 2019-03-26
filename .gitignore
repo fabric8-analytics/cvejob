@@ -13,3 +13,5 @@ html/
 latex/
 coverage.xml
 cvedb/
+.DS_Store
+nvd-data/nvdcve*.*
