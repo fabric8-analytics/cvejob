@@ -180,17 +180,11 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
             if response.status_code != 200:
                 return False
 
-            top_lang = ''
-            top_lang_bytes = 0
             langs = response.json()
-            for lang, lang_bytes in langs.items():
-                if lang_bytes > top_lang_bytes:
-                    top_lang_bytes = lang_bytes
-                    top_lang = lang
-
             lang_group = (Config.ecosystem, *self.lang_groups.get(Config.ecosystem, []))
 
-            if top_lang and top_lang.lower() in lang_group:
+            # if repo languages list contain the language for which the job is being run
+            if (set(x.lower() for x in langs) & set(y.lower() for y in lang_group)):
                 return True
             return False
 
