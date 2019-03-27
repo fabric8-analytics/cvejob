@@ -74,16 +74,34 @@ class CveCheck(object, metaclass=abc.ABCMeta):
 
 
 class NotOlderThanCheck(CveCheck):
-    """Check whether given CVE is not older than predefined number of days."""
+    """Check whether given CVE is not older than predefined number of days.
+
+    Examples:
+        If Config.cve_age is equal to 1, then only CVEs which were added/modified
+        yesterday will pass the check.
+        If Config.cve_age is equal to 7, then only CVEs which were added/modified
+        in the last 7 days will pass the check, minus todays CVEs.
+        If Config.cve_age is equal to 0, then all CVEs will pass the check.
+
+    """
 
     def check(self):
         """Perform the check."""
         config_age = Config.cve_age
         if config_age == 0:
             return True
-        now = datetime.datetime.now()
-        age = now.date() - self._doc.modified_date.date()
-        return age.days < config_age
+        today = datetime.datetime.utcnow().date()
+        age = today - self._doc.modified_date.date()
+        return self.evaluate(age, config_age)
+
+    def evaluate(self, age, wanted_age):
+        """Evaluate whether given age is within the wanted range.
+
+        :param age: datetime.timedelta, delta between today and when CVE was last modified
+        :param wanted_age: int, age in range(1, wanted_age+1) is considered valid
+        :return: bool, True for age in wanted_age range, False otherwise
+        """
+        return age.days and age.days <= wanted_age
 
 
 class NotUnsupportedFileExtensionCheck(CveCheck):
