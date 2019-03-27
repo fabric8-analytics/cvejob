@@ -1,6 +1,7 @@
 """Test cvejob.filters.input module."""
 
 import pytest
+import datetime
 
 
 from cvejob.filters.input import (
@@ -20,6 +21,14 @@ def test_not_older_than_check(config, javascript_cve, mocker):
 
     check = NotOlderThanCheck(javascript_cve)
     assert check.check()
+
+
+def test_not_older_than_check_evaluate(javascript_cve):
+    """Test NotOlderThanCheck().evaluate()."""
+    check = NotOlderThanCheck(javascript_cve)
+    assert check.evaluate(datetime.timedelta(days=1), 1)
+    assert check.evaluate(datetime.timedelta(days=1), 7)
+    assert not check.evaluate(datetime.timedelta(days=0), 1)
 
 
 def test_not_unsupported_file_extension_check(javascript_cve):
