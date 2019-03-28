@@ -59,15 +59,14 @@ def test_runtime_config():
 def test_runtime_config_attributes():
     """Check the attributes existence for a class RuntimeConfig."""
     config = RuntimeConfig()
+    assert config is not None
 
     assert hasattr(config, "_config")
 
 
 def unset_environment_variable(name):
     """Reset specified environment variable."""
-    old_value = os.environ.get('CVEJOB_ECOSYSTEM')
-    del os.environ['CVEJOB_ECOSYSTEM']
-    return old_value
+    return os.environ.pop(name, None)
 
 
 def test_runtime_config_attribute_ecosystem():
