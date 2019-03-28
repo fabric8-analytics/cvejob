@@ -108,11 +108,30 @@ def test_runtime_config_attribute_cvejob_feed_dir():
     old_value = unset_environment_variable('CVEJOB_FEED_DIR')
 
     config = RuntimeConfig()
-    assert config._config.cve_age == 0
+    assert config._config.feed_dir == 'nvd-data/'
 
     os.environ['CVEJOB_FEED_DIR'] = 'directory1'
     config = RuntimeConfig()
-    assert config._config.cve_age == 'directory1'
+    assert config._config.feed_dir == 'directory1'
 
     if old_value is not None:
         os.environ['CVEJOB_FEED_DIR'] = old_value
+
+
+def test_runtime_config_attribute_cvejob_feed_names():
+    """Check the attributes handling for a class RuntimeConfig."""
+    old_value = unset_environment_variable('CVEJOB_FEED_NAMES')
+
+    config = RuntimeConfig()
+    assert config._config.feed_names is None
+
+    os.environ['CVEJOB_FEED_NAMES'] = 'name1'
+    config = RuntimeConfig()
+    assert config._config.feed_names == ['name1']
+
+    os.environ['CVEJOB_FEED_NAMES'] = 'name1,name2'
+    config = RuntimeConfig()
+    assert config._config.feed_names == ['name1', 'name2']
+
+    if old_value is not None:
+        os.environ['CVEJOB_FEED_NAMES'] = old_value
