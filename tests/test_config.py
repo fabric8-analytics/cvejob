@@ -80,7 +80,8 @@ def test_runtime_config_attribute_ecosystem():
     config = RuntimeConfig()
     assert config._config.ecosystem == 'foobar'
 
-    os.environ['CVEJOB_ECOSYSTEM'] = old_value
+    if old_value is not None:
+        os.environ['CVEJOB_ECOSYSTEM'] = old_value
 
 
 def test_runtime_config_attribute_cve_age():
@@ -98,4 +99,20 @@ def test_runtime_config_attribute_cve_age():
     config = RuntimeConfig()
     assert config._config.cve_age == -42
 
-    os.environ['CVEJOB_CVE_AGE'] = old_value
+    if old_value is not None:
+        os.environ['CVEJOB_CVE_AGE'] = old_value
+
+
+def test_runtime_config_attribute_cvejob_feed_dir():
+    """Check the attributes handling for a class RuntimeConfig."""
+    old_value = unset_environment_variable('CVEJOB_FEED_DIR')
+
+    config = RuntimeConfig()
+    assert config._config.cve_age == 0
+
+    os.environ['CVEJOB_FEED_DIR'] = 'directory1'
+    config = RuntimeConfig()
+    assert config._config.cve_age == 'directory1'
+
+    if old_value is not None:
+        os.environ['CVEJOB_FEED_DIR'] = old_value
