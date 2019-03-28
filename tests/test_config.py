@@ -173,11 +173,11 @@ def test_runtime_config_attribute_cvejob_package_name():
     old_value = unset_environment_variable('CVEJOB_PACKAGE_NAME')
 
     config = RuntimeConfig()
-    assert config._config.cve_package_name is None
+    assert config._config.package_name is None
 
     os.environ['CVEJOB_PACKAGE_NAME'] = 'test_package'
     config = RuntimeConfig()
-    assert config._config.cve_package_name == 'test_package'
+    assert config._config.package_name == 'test_package'
 
     if old_value is not None:
         os.environ['CVEJOB_PACKAGE_NAME'] = old_value
@@ -218,31 +218,31 @@ def test_runtime_config_attribute_cvejob_use_nvd_toolkit():
     old_value = unset_environment_variable('CVEJOB_USE_NVD_TOOLKIT')
 
     config = RuntimeConfig()
-    assert not config._config.pkgfile_dir
+    assert not config._config.use_nvdtoolkit
 
     os.environ['CVEJOB_USE_NVD_TOOLKIT'] = 'true'
     config = RuntimeConfig()
-    assert config._config.pkgfile_dir
+    assert config._config.use_nvdtoolkit
 
     os.environ['CVEJOB_USE_NVD_TOOLKIT'] = '1'
     config = RuntimeConfig()
-    assert config._config.pkgfile_dir
+    assert config._config.use_nvdtoolkit
 
     os.environ['CVEJOB_USE_NVD_TOOLKIT'] = 'yes'
     config = RuntimeConfig()
-    assert config._config.pkgfile_dir
+    assert config._config.use_nvdtoolkit
 
     os.environ['CVEJOB_USE_NVD_TOOLKIT'] = 'false'
     config = RuntimeConfig()
-    assert not config._config.pkgfile_dir
+    assert not config._config.use_nvdtoolkit
 
     os.environ['CVEJOB_USE_NVD_TOOLKIT'] = '0'
     config = RuntimeConfig()
-    assert not config._config.pkgfile_dir
+    assert not config._config.use_nvdtoolkit
 
     os.environ['CVEJOB_USE_NVD_TOOLKIT'] = 'no'
     config = RuntimeConfig()
-    assert not config._config.pkgfile_dir
+    assert not config._config.use_nvdtoolkit
 
     if old_value is not None:
         os.environ['CVEJOB_USE_NVD_TOOLKIT'] = old_value
