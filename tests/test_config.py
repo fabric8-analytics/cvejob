@@ -59,4 +59,25 @@ def test_runtime_config_attributes():
     """Check the attributes existence for a class RuntimeConfig."""
     config = DefaultConfig()
 
-    assert hasattr(config, _config)
+    assert hasattr(config, "_config")
+
+
+def unset_environment_variable(name):
+    """Reset specified environment variable."""
+    old_value = os.environ.get('CVEJOB_ECOSYSTEM')
+    del os.environ['CVEJOB_ECOSYSTEM']
+    return old_value
+
+
+def test_runtime_config_attribute_ecosystem():
+    """Check the attributes handling for a class RuntimeConfig."""
+    old_value = unset_environment_variable('CVEJOB_ECOSYSTEM')
+
+    config = DefaultConfig()
+    assert config._config.ecosystem == 'python'
+
+    os.environ['CVEJOB_ECOSYSTEM'] = 'foobar'
+    config = DefaultConfig()
+    assert config._config.ecosystem == 'foobar'
+
+    os.environ['CVEJOB_ECOSYSTEM'] = old_value
