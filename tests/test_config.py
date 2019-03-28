@@ -181,3 +181,18 @@ def test_runtime_config_attribute_cvejob_package_name():
 
     if old_value is not None:
         os.environ['CVEJOB_PACKAGE_NAME'] = old_value
+
+
+def test_runtime_config_attribute_cvejob_cpe2pkg_path():
+    """Check the attributes handling for a class RuntimeConfig."""
+    old_value = unset_environment_variable('CVEJOB_CPE2PKG_PATH')
+
+    config = RuntimeConfig()
+    assert config._config.cpe2pkg_path is None
+
+    os.environ['CVEJOB_CPE2PKG_PATH'] = 'cpe2pkg'
+    config = RuntimeConfig()
+    assert config._config.cpe2pkg_path == 'cpe2pkg'
+
+    if old_value is not None:
+        os.environ['CVEJOB_CPE2PKG_PATH'] = old_value
