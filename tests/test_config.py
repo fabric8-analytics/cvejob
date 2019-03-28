@@ -188,11 +188,26 @@ def test_runtime_config_attribute_cvejob_cpe2pkg_path():
     old_value = unset_environment_variable('CVEJOB_CPE2PKG_PATH')
 
     config = RuntimeConfig()
-    assert config._config.cpe2pkg_path is None
+    assert config._config.cpe2pkg_path == 'cpe2pkg.jar'
 
-    os.environ['CVEJOB_CPE2PKG_PATH'] = 'cpe2pkg'
+    os.environ['CVEJOB_CPE2PKG_PATH'] = 'cpe2pkg10.jar'
     config = RuntimeConfig()
-    assert config._config.cpe2pkg_path == 'cpe2pkg'
+    assert config._config.cpe2pkg_path == 'cpe2pkg10.jar'
 
     if old_value is not None:
         os.environ['CVEJOB_CPE2PKG_PATH'] = old_value
+
+
+def test_runtime_config_attribute_cvejob_pkgfile_dir():
+    """Check the attributes handling for a class RuntimeConfig."""
+    old_value = unset_environment_variable('CVEJOB_PKGFILE_DIR')
+
+    config = RuntimeConfig()
+    assert config._config.pkgfile_dir == 'data/'
+
+    os.environ['CVEJOB_PKGFILE_DIR'] = 'cpe2pkg10.jar'
+    config = RuntimeConfig()
+    assert config._config.pkgfile_dir == 'cpe2pkg10.jar'
+
+    if old_value is not None:
+        os.environ['CVEJOB_PKGFILE_DIR'] = old_value
