@@ -53,3 +53,10 @@ def test_runtime_config():
     """Basic test for the class RuntimeConfig."""
     config = RuntimeConfig()
     assert config is not None
+
+
+def test_runtime_config_attributes():
+    """Check the attributes existence for a class RuntimeConfig."""
+    config = DefaultConfig()
+
+    assert hasattr(config, _config)
