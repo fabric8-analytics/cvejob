@@ -1,6 +1,7 @@
 """Test for the config.py."""
 
 # import pytest
+import os
 
 from cvejob.config import DefaultConfig, RuntimeConfig
 
@@ -57,7 +58,7 @@ def test_runtime_config():
 
 def test_runtime_config_attributes():
     """Check the attributes existence for a class RuntimeConfig."""
-    config = DefaultConfig()
+    config = RuntimeConfig()
 
     assert hasattr(config, "_config")
 
@@ -73,11 +74,29 @@ def test_runtime_config_attribute_ecosystem():
     """Check the attributes handling for a class RuntimeConfig."""
     old_value = unset_environment_variable('CVEJOB_ECOSYSTEM')
 
-    config = DefaultConfig()
+    config = RuntimeConfig()
     assert config._config.ecosystem == 'python'
 
     os.environ['CVEJOB_ECOSYSTEM'] = 'foobar'
-    config = DefaultConfig()
+    config = RuntimeConfig()
     assert config._config.ecosystem == 'foobar'
 
     os.environ['CVEJOB_ECOSYSTEM'] = old_value
+
+
+def test_runtime_config_attribute_cve_age():
+    """Check the attributes handling for a class RuntimeConfig."""
+    old_value = unset_environment_variable('CVEJOB_CVE_AGE')
+
+    config = RuntimeConfig()
+    assert config._config.cve_age == 0
+
+    os.environ['CVEJOB_CVE_AGE'] = '42'
+    config = RuntimeConfig()
+    assert config._config.cve_age == 42
+
+    os.environ['CVEJOB_CVE_AGE'] = '-42'
+    config = RuntimeConfig()
+    assert config._config.cve_age == -42
+
+    os.environ['CVEJOB_CVE_AGE'] = old_value
