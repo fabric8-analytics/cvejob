@@ -211,3 +211,38 @@ def test_runtime_config_attribute_cvejob_pkgfile_dir():
 
     if old_value is not None:
         os.environ['CVEJOB_PKGFILE_DIR'] = old_value
+
+
+def test_runtime_config_attribute_cvejob_use_nvd_toolkit():
+    """Check the attributes handling for a class RuntimeConfig."""
+    old_value = unset_environment_variable('CVEJOB_USE_NVD_TOOLKIT')
+
+    config = RuntimeConfig()
+    assert not config._config.pkgfile_dir
+
+    os.environ['CVEJOB_USE_NVD_TOOLKIT'] = 'true'
+    config = RuntimeConfig()
+    assert config._config.pkgfile_dir
+
+    os.environ['CVEJOB_USE_NVD_TOOLKIT'] = '1'
+    config = RuntimeConfig()
+    assert config._config.pkgfile_dir
+
+    os.environ['CVEJOB_USE_NVD_TOOLKIT'] = 'yes'
+    config = RuntimeConfig()
+    assert config._config.pkgfile_dir
+
+    os.environ['CVEJOB_USE_NVD_TOOLKIT'] = 'false'
+    config = RuntimeConfig()
+    assert not config._config.pkgfile_dir
+
+    os.environ['CVEJOB_USE_NVD_TOOLKIT'] = '0'
+    config = RuntimeConfig()
+    assert not config._config.pkgfile_dir
+
+    os.environ['CVEJOB_USE_NVD_TOOLKIT'] = 'no'
+    config = RuntimeConfig()
+    assert not config._config.pkgfile_dir
+
+    if old_value is not None:
+        os.environ['CVEJOB_USE_NVD_TOOLKIT'] = old_value
