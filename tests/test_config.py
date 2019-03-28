@@ -246,3 +246,18 @@ def test_runtime_config_attribute_cvejob_use_nvd_toolkit():
 
     if old_value is not None:
         os.environ['CVEJOB_USE_NVD_TOOLKIT'] = old_value
+
+
+def test_runtime_config_attribute_cvejob_nvd_toolkit_export_dir():
+    """Check the attributes handling for a class RuntimeConfig."""
+    old_value = unset_environment_variable('CVEJOB_NVD_TOOLKIT_EXPORT_DIR')
+
+    config = RuntimeConfig()
+    assert config._config.nvdtoolkit_export_dir == 'export/'
+
+    os.environ['CVEJOB_NVD_TOOLKIT_EXPORT_DIR'] = 'export2/'
+    config = RuntimeConfig()
+    assert config._config.nvdtoolkit_export_dir == 'export2/'
+
+    if old_value is not None:
+        os.environ['CVEJOB_NVD_TOOLKIT_EXPORT_DIR'] = old_value
