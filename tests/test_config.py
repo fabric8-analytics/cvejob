@@ -166,3 +166,18 @@ def test_runtime_config_attribute_cvejob_cve_id():
 
     if old_value is not None:
         os.environ['CVEJOB_CVE_ID'] = old_value
+
+
+def test_runtime_config_attribute_cvejob_package_name():
+    """Check the attributes handling for a class RuntimeConfig."""
+    old_value = unset_environment_variable('CVEJOB_PACKAGE_NAME')
+
+    config = RuntimeConfig()
+    assert config._config.cve_package_name is None
+
+    os.environ['CVEJOB_PACKAGE_NAME'] = 'test_package'
+    config = RuntimeConfig()
+    assert config._config.cve_package_name == 'test_package'
+
+    if old_value is not None:
+        os.environ['CVEJOB_PACKAGE_NAME'] = old_value
