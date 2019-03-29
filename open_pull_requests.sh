@@ -50,8 +50,7 @@ echo "Merging cvejob-local database with the upstream database..."
 cp -r ${data}/* ${cvedb}/database/
 
 # get list of new/modified files in the upstream database
-files=$(cd ${cvedb} && git status -s | awk '{ print $2 }')
-
+files=$(cd ${cvedb} && git status -s -u | awk '{ print $2 }')
 
 # iterate over all new/modified files in the upstream database and open PRs
 echo "Opening pull requests..."
