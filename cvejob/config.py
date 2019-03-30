@@ -62,7 +62,7 @@ class RuntimeConfig(object):
 
         feed_names = os.environ.get('CVEJOB_FEED_NAMES')
         if feed_names is not None:
-            self._config.feed_names = ','.split(feed_names)
+            self._config.feed_names = feed_names.split(',')
 
         date_range = os.environ.get('CVEJOB_DATE_RANGE')
         if date_range is not None:
