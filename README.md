@@ -68,8 +68,7 @@ Again, the results of the run will be stored in `database/` directory.
 ### Known package name
 
 Mapping CVEs to packages is not a straight-forward process and there is some guessing involved.
-So it is possible that some results will not be mapped correctly. However, there may be situations
-when the correct package name is known in advance.
+So it is possible that some results will not be mapped correctly. However, there may be situations when the correct package name is known in advance.
 CVEjob can be then instructed to skip guessing and to generate results for provided mapping.
 
 ```bash
