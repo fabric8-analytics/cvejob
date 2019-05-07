@@ -67,7 +67,7 @@ push_image() {
 prep() {
     yum -y update
     yum -y install epel-release https://centos7.iuscommunity.org/ius-release.rpm
-    yum -y install git gcc python36u python36u-devel python36u-pip which make maven
+    yum -y install git gcc python36 python36-devel python36-pip which make maven
 }
 
 load_jenkins_vars
