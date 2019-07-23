@@ -15,3 +15,5 @@ coverage.xml
 cvedb/
 .DS_Store
 nvd-data/nvdcve*.*
+*.log
+*.err
