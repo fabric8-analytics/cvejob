@@ -194,19 +194,6 @@ scripts.
 
 List of directories containing source code, that needs to be checked, are stored in a file `directories.txt`
 
-#### Coding standards
-
-- You can use scripts `run-linter.sh` and `check-docstyle.sh` to check if the code follows [PEP 8](https://www.python.org/dev/peps/pep-0008/) and [PEP 257](https://www.python.org/dev/peps/pep-0257/) coding standards. These scripts can be run w/o any arguments:
-
-```
-./run-linter.sh
-./check-docstyle.sh
-```
-
-The first script checks the indentation, line lengths, variable names, white space around operators etc. The second
-script checks all documentation strings - its presence and format. Please fix any warnings and errors reported by these
-scripts.
-
 #### Code complexity measurement
 
 The scripts `measure-cyclomatic-complexity.sh` and `measure-maintainability-index.sh` are used to measure code complexity. These scripts can be run w/o any arguments:
@@ -234,6 +221,8 @@ Please note that due to Python's dynamic nature, static code analyzers are likel
 
 Because of this potential problems, only code detected with more than 90% of confidence is reported.
 
+List of directories containing source code, that needs to be checked, are stored in a file `directories.txt`
+
 #### Common issues detection
 
 The script `detect-common-errors.sh` can be used to detect common errors in the repository. This script can be run w/o any arguments:
@@ -243,6 +232,8 @@ The script `detect-common-errors.sh` can be used to detect common errors in the 
 ```
 
 Please note that only semantical problems are reported.
+
+List of directories containing source code, that needs to be checked, are stored in a file `directories.txt`
 
 #### Check for scripts written in BASH
 
