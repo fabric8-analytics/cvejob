@@ -1,12 +1,16 @@
 #!/bin/bash
 
+# Script to check all Python scripts for PEP-8 issues
+
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
 IFS=$'\n'
 
 # list of directories with sources to check
-directories=$(cat directories.txt)
+directories=$(cat ${SCRIPT_DIR}/directories.txt)
 
 # list of separate files to check
-separate_files=$(cat files.txt)
+separate_files=$(cat ${SCRIPT_DIR}/files.txt)
 
 pass=0
 fail=0
@@ -46,6 +50,9 @@ function prepare_venv() {
 
 	${PYTHON} -m venv "venv" && source venv/bin/activate && pip install pycodestyle >&2
 }
+
+pushd "${SCRIPT_DIR}/.."
+
 
 echo "----------------------------------------------------"
 echo "Running Python linter against following directories:"
@@ -106,3 +113,5 @@ else
     echo "Linter fail, $fail source files out of $total source files need to be fixed"
     exit 1
 fi
+
+popd
