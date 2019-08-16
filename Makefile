@@ -31,7 +31,7 @@ java-package-names: build-maven-packages
 	scripts/get_java_packages.sh > data/java-packages
 
 test:
-	./run-tests.sh
+	./qa/run-tests.sh
 
 docker-build:
 	docker build --no-cache -t $(REGISTRY)/$(REPOSITORY):$(DEFAULT_TAG) -f $(DOCKERFILE) .
