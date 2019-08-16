@@ -1,5 +1,9 @@
 #!/bin/bash
 
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+pushd "${SCRIPT_DIR}/.."
+
 function prepare_venv() {
     # we want tests to run on python3.6
     printf 'checking alias `python3.6` ... ' >&2
@@ -22,6 +26,8 @@ function prepare_venv() {
 [ "$NOVENV" == "1" ] || prepare_venv || exit 1
 
 radon mi -s -i venv .
+
+popd
 
 if [[ "$1" == "--fail-on-error" ]]
 then
