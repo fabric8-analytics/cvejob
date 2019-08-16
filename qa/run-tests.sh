@@ -1,5 +1,9 @@
 #!/bin/bash
 
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+pushd "${SCRIPT_DIR}/.." > /dev/null
+
 set -e
 set -x
 
@@ -67,3 +71,5 @@ ${PYTHON} -m pip install pytest pytest-cov
 ${PYTHON} -m pytest --cov="cvejob/" --cov-report term-missing --cov-fail-under=$COVERAGE_THRESHOLD -vv tests/ $@
 
 `which codecov` --token=e27b6fe8-371b-41d9-9894-8d32af762c19
+
+popd > /dev/null

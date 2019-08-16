@@ -1,15 +1,30 @@
 #!/bin/bash
 
+# Script to check all Python scripts for PEP-8 issues
+
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
 IFS=$'\n'
 
 # list of directories with sources to check
-directories=$(cat directories.txt)
+directories=$(cat ${SCRIPT_DIR}/directories.txt)
 
 # list of separate files to check
-separate_files=$(cat files.txt)
+separate_files=$(cat ${SCRIPT_DIR}/files.txt)
 
 pass=0
 fail=0
+
+TERM=${TERM:-xterm}
+
+# set up terminal colors
+NORMAL=$(tput sgr0)
+RED=$(tput bold && tput setaf 1)
+GREEN=$(tput bold && tput setaf 2)
+YELLOW=$(tput bold && tput setaf 3)
+
+
+TERM=${TERM:-xterm}
 
 # set up terminal colors
 NORMAL=$(tput sgr0)
@@ -33,34 +48,14 @@ function prepare_venv() {
 
 	printf "%sOK%s\n" "${GREEN}" "${NORMAL}" >&2
 
-    ${PYTHON} -m venv "venv" && source venv/bin/activate && pip install vulture
+	${PYTHON} -m venv "venv" && source venv/bin/activate && pip install pycodestyle >&2
 }
 
-# run the vulture for all files that are provided in $1
-function check_files() {
-    for source in $1
-    do
-        echo "$source"
-        vulture --min-confidence 90 "$source"
-        if [ $? -eq 0 ]
-        then
-            echo "    Pass"
-            let "pass++"
-        elif [ $? -eq 2 ]
-        then
-            echo "    Illegal usage (should not happen)"
-            exit 2
-        else
-            echo "    Fail"
-            let "fail++"
-        fi
-    done
-}
+pushd "${SCRIPT_DIR}/.."
 
 
 echo "----------------------------------------------------"
-echo "Checking source files for dead code and unused imports"
-echo "in following directories:"
+echo "Running Python linter against following directories:"
 echo "$directories"
 echo "----------------------------------------------------"
 echo
@@ -72,24 +67,51 @@ for directory in $directories
 do
     files=$(find "$directory" -path "$directory/venv" -prune -o -name '*.py' -print)
 
-    check_files "$files"
+    for source in $files
+    do
+        echo "$source"
+        pycodestyle "$source"
+        if [ $? -eq 0 ]
+        then
+            echo "    Pass"
+            let "pass++"
+        else
+            echo "    Fail"
+            let "fail++"
+        fi
+    done
 done
 
+
+echo
 echo "----------------------------------------------------"
-echo "Checking following source files for dead code and"
-echo "unused imports:"
+echo "Running Python linter against selected files:"
 echo "$separate_files"
 echo "----------------------------------------------------"
-echo
 
-check_files "$separate_files"
+# check for individual files
+for source in $separate_files
+do
+    echo "$source"
+    pycodestyle "$source"
+    if [ $? -eq 0 ]
+    then
+        echo "    Pass"
+        let "pass++"
+    else
+        echo "    Fail"
+        let "fail++"
+    fi
+done
+
 
 if [ $fail -eq 0 ]
 then
     echo "All checks passed for $pass source files"
 else
     let total=$pass+$fail
-    echo "$fail source files out of $total files seems to contain dead code and/or unused imports"
+    echo "Linter fail, $fail source files out of $total source files need to be fixed"
     exit 1
 fi
 
+popd

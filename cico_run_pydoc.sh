@@ -9,4 +9,4 @@ check_python_version() {
 . cico_setup.sh
 
 check_python_version
-./check-docstyle.sh
+./qa/check-docstyle.sh
