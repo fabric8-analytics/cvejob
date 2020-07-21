@@ -138,7 +138,7 @@ def run():
 
     if not collection:  # collection is empty
         logger.info(
-            "Collection is empty.".format(
+            "Collection is empty [{picked_cve_id}].".format(
                 picked_cve_id=cherrypicked_cve_id,
             ))
 
