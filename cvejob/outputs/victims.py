@@ -24,7 +24,7 @@ class VictimsYamlOutput(object):
                  candidates: list,
                  affected: list,
                  fixedin: list):
-        """Constructor."""
+        """Initialize Constructor."""
         self._ecosystem = ecosystem
 
         self._doc = cve_doc

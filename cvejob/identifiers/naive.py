@@ -22,7 +22,7 @@ class NaivePackageNameIdentifier(object):
     """
 
     def __init__(self, doc, ecosystem, pkgfile_path, cpe2pkg_path=Config.cpe2pkg_path):
-        """Constructor."""
+        """Initialize Constructor."""
         self.doc = doc
         self.ecosystem = ecosystem
         self.pkgfile_path = pkgfile_path
