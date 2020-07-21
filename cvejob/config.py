@@ -10,7 +10,7 @@ class DefaultConfig(object):
     ecosystem = 'python'
 
     # max age of a CVE, in days; older CVEs will be ignored.
-    # 0 = disable this option and process all CVEs
+    # 0 = disable this option and process all CVEs.
     cve_age = 0
 
     # location of the default NVD JSON feeds
