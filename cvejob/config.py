@@ -45,7 +45,7 @@ class RuntimeConfig(object):
     """Runtime configuration holder."""
 
     def __init__(self):
-        """Constructor."""
+        """Initialize Constructor."""
         self._config = DefaultConfig()
 
         ecosystem = os.environ.get('CVEJOB_ECOSYSTEM')

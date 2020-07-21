@@ -14,7 +14,7 @@ class BenevolentVersion(object):
     """
 
     def __init__(self, version_str):
-        """Constructor."""
+        """Initialize Constructor."""
         self._version_str = version_str
         self._parsed = self._parse()
 

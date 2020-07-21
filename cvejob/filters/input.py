@@ -65,7 +65,7 @@ class CveCheck(object, metaclass=abc.ABCMeta):
     """Base class for all input checks."""
 
     def __init__(self, cve_doc):
-        """Constructor."""
+        """Initialize Constructor."""
         self._doc = cve_doc
 
     @abc.abstractmethod
@@ -137,7 +137,7 @@ class IsSupportedGitHubLanguageCheck(CveCheck):
     _name_whitelist_raw = ('vuln', 'vulnerability', 'poc', 'advisory', 'security', 'cve')
 
     def __init__(self, cve_doc):
-        """Constructor."""
+        """Initialize Constructor."""
         super().__init__(cve_doc)
 
         self._stemmer = PorterStemmer()
