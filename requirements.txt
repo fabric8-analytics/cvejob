@@ -6,7 +6,7 @@ requests
 beautifulsoup4
 numpy
 scipy
-git+https://github.com/fabric8-analytics/nvdlib.git#egg=nvdlib
-git+https://github.com/fabric8-analytics/fabric8-analytics-nvd-toolkit.git#egg=toolkit
-git+https://github.com/fabric8-analytics/fabric8-analytics-utils.git#egg=fabric8-analytics-utils
-git+https://github.com/fabric8-analytics/fabric8-analytics-version-comparator.git#egg=f8a_version_comparator
+git+https://github.com/fabric8-analytics/nvdlib.git@89a9e7e#egg=nvdlib
+git+https://github.com/fabric8-analytics/fabric8-analytics-nvd-toolkit.git@c0e2b96#egg=toolkit
+git+https://github.com/fabric8-analytics/fabric8-analytics-utils.git@d6e382e#egg=fabric8-analytics-utils
+git+https://github.com/fabric8-analytics/fabric8-analytics-version-comparator.git@8a57ac7#egg=f8a_version_comparator
