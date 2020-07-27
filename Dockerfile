@@ -11,7 +11,7 @@ ENV GIT_AUTHOR_EMAIL=fabric8.analytics.cve.bot@gmail.com
 ENV NLTK_DATA=/nltk_data
 
 RUN yum install -y epel-release https://centos7.iuscommunity.org/ius-release.rpm &&\
-    yum install -y python36u python36u-devel python36u-pip java-1.8.0-openjdk-headless gcc git which npm make maven &&\
+    yum install -y python36 python36-devel python36-pip java-1.8.0-openjdk-headless gcc git which npm make maven &&\
     yum clean all
 
 RUN mkdir -p ${PREP_DIR}/data ${NLTK_DATA}
