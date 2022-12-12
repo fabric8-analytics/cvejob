@@ -22,6 +22,7 @@ objects:
       spec:
         template:
           spec:
+            serviceAccountName: dsaas-deploy
             restartPolicy: Never
             containers:
             - name: f8a-cvejob-${CVEJOB_ECOSYSTEM}
